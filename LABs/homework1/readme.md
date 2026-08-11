@@ -21,16 +21,20 @@
 | `10.0.0.0/13` | Summary всего ЦОД      |
 
 ### Идентификаторы нод:
-1–99     Spine
-101–199  Leaf
+1–99     Spine,
+101–199  Leaf,
 
-Spine1 = 1
-Spine2 = 2
+Spine1 = 1,
+Spine2 = 2,
+...,
+Spine99 = 99,
+
+Leaf1 = 101,
+Leaf2 = 102,
+Leaf3 = 103,
 ...
-Spine99 = 99
+Leaf3 = 199.
 
-Leaf1 = 101
-Leaf2 = 102
-Leaf3 = 103
+
 ...
 Leaf199 = 199
