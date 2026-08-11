@@ -1,6 +1,6 @@
 # Домашнее задание №1. Проектирование адресного пространства
 ## Топология сети
-<img width="1058" height="813" alt="DC_topology" src="https://github.com/user-attachments/assets/b7d13c4f-9fbd-49b8-91d0-06c0c32bab60" />
+<img width="529" height="407" alt="DC_topology" src="https://github.com/user-attachments/assets/b7d13c4f-9fbd-49b8-91d0-06c0c32bab60" />
 
 ## Задание:
 1. Собрать топологию CLOS
@@ -41,7 +41,8 @@
 | Leaf2  | `10.0.102.0/32` | `10.1.102.0/32`    |
 | Leaf3  | `10.0.103.0/32` | `10.1.103.0/32`    |
 
-Примечание: адрес читается как 10.FUNCTION.NODE-ID.INDEX, например, 10.1.103.0/32: 1 = overlay, node 103 = Leaf3, 0 = адрес.
+Примечание: адрес читается как 10.FUNCTION.NODE-ID.INDEX, 
+например, 10.1.103.0/32: 1 = overlay, node 103 = Leaf3, 0 = адрес.
 
 #### Peer-to-peer адресация
 | Link         | Spine interface/IP | Leaf interface/IP | Prefix |
@@ -53,5 +54,7 @@
 | Spine2–Leaf2 | S2 Et2 `10.2.2.2`  | L2 Et2 `10.2.2.3` | `/31`  |
 | Spine2–Leaf3 | S2 Et3 `10.2.2.4`  | L3 Et2 `10.2.2.5` | `/31`  |
 
-Примечание: адрес читается как 10.FUNCTION.SPINE.SUBNET, например, 10.2.2.4/31: 2 = P2P, 2 = Spine2, 4 = номер P2P-подсети к Leaf, 
-где 10.2.2.4/31: 2 = P2P, 2 = Spine2, 4 = адрес Spine2; 10.2.2.5/31: 2 = P2P, 2 = Spine2, 4 = адрес Leaf3.
+Примечание: адрес читается как 10.FUNCTION.SPINE.SUBNET, 
+например, 10.2.2.4/31: 2 = P2P, 2 = Spine2, 4 = номер P2P-подсети к Leaf, 
+где 10.2.2.4/31: 2 = P2P, 2 = Spine2, 4 = адрес Spine2; 
+а 10.2.2.5/31: 2 = P2P, 2 = Spine2, 4 = адрес Leaf3.
