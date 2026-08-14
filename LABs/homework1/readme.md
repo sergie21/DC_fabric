@@ -58,9 +58,10 @@
 
 Адрес читается как 10.FUNCTION.SPINE.SUBNET, 
 например, 10.2.2.4/31: 2 = P2P, 2 = Spine2, 4 = номер P2P-подсети к Leaf:
-___
+```
 10.2.2.4/31: 2 = P2P, 2 = Spine2, 4 = адрес Spine2; 
 10.2.2.5/31: 2 = P2P, 2 = Spine2, 4 = адрес Leaf3.
+```
 
 #### Leaf-server адресация
 | Link          | Leaf interface/IP  | Server interface/IP | Prefix |
