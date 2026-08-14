@@ -168,7 +168,6 @@ PING 10.4.3.3 (10.4.3.3) 72(100) bytes of data.
 5 packets transmitted, 5 received, 0% packet loss, time 15ms
 rtt min/avg/max/mdev = 0.013/0.904/4.437/1.766 ms, ipg/ewma 3.666/2.609 ms
 ```
-
 #### Пингуем спайны №1/2 с лифа №2
 ```
 leaf2>ping 10.2.1.3
@@ -195,7 +194,6 @@ PING 10.2.2.3 (10.2.2.3) 72(100) bytes of data.
 5 packets transmitted, 5 received, 0% packet loss, time 13ms
 rtt min/avg/max/mdev = 0.016/0.798/3.858/1.529 ms, ipg/ewma 3.268/2.274 ms
 ```
-
 #### Пингуем лифы №1/2/3 со спайна №1
 ```
 spine1>ping 10.2.1.0
