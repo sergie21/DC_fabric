@@ -71,6 +71,7 @@
 
 ### Вывод IP-адресации узлов
 #### Leaf1
+
 leaf1>show ip interface brief 
                                                                             Address
 Interface        IP Address          Status      Protocol            MTU    Owner  
@@ -83,6 +84,7 @@ Loopback1        10.1.11.0/32        up          up                65535
 Management0      172.20.20.4/24      up          up                 1500           
 
 #### Leaf2
+
 leaf2>sh ip interface brief 
                                                                             Address
 Interface        IP Address          Status      Protocol            MTU    Owner  
@@ -95,6 +97,7 @@ Loopback1        10.1.12.0/32        up          up                65535
 Management0      172.20.20.5/24      up          up                 1500           
 
 #### Leaf3
+
 leaf3>sh ip interface brief 
                                                                             Address
 Interface        IP Address          Status      Protocol            MTU    Owner  
