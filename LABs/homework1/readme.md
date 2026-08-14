@@ -113,6 +113,126 @@ Loopback1        10.1.13.0/32        up          up                65535
 Management0      172.20.20.6/24      up          up                 1500           
 ```
 
+#### Spine1
+```
+spine1>show ip interface brief 
+                                                                            Address
+Interface        IP Address          Status      Protocol            MTU    Owner  
+---------------- ------------------- ----------- -------------- ----------- -------
+Ethernet1        10.2.1.0/31         up          up                 1500           
+Ethernet2        10.2.1.2/31         up          up                 1500           
+Ethernet3        10.2.1.4/31         up          up                 1500           
+Loopback0        10.0.1.0/32         up          up                65535           
+Management0      172.20.20.2/24      up          up                 1500           
+```
+
+#### Spine2
+```
+spine2>show ip interface brief 
+                                                                            Address
+Interface        IP Address          Status      Protocol            MTU    Owner  
+---------------- ------------------- ----------- -------------- ----------- -------
+Ethernet1        10.2.2.0/31         up          up                 1500           
+Ethernet2        10.2.2.2/31         up          up                 1500           
+Ethernet3        10.2.2.4/31         up          up                 1500           
+Loopback0        10.0.2.0/32         up          up                65535           
+Management0      172.20.20.3/24      up          up                 1500           
+```
+
+### Ping соседей
+#### Пингуем серверы №3/4 с лифа №3
+```
+leaf3>ping 10.4.3.1
+PING 10.4.3.1 (10.4.3.1) 72(100) bytes of data.
+80 bytes from 10.4.3.1: icmp_seq=1 ttl=64 time=1.51 ms
+80 bytes from 10.4.3.1: icmp_seq=2 ttl=64 time=0.066 ms
+80 bytes from 10.4.3.1: icmp_seq=3 ttl=64 time=0.049 ms
+80 bytes from 10.4.3.1: icmp_seq=4 ttl=64 time=0.042 ms
+80 bytes from 10.4.3.1: icmp_seq=5 ttl=64 time=0.012 ms
+
+--- 10.4.3.1 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 5ms
+rtt min/avg/max/mdev = 0.012/0.335/1.508/0.586 ms, ipg/ewma 1.356/0.900 ms
+
+leaf3>ping 10.4.3.3
+PING 10.4.3.3 (10.4.3.3) 72(100) bytes of data.
+80 bytes from 10.4.3.3: icmp_seq=1 ttl=64 time=4.44 ms
+80 bytes from 10.4.3.3: icmp_seq=2 ttl=64 time=0.034 ms
+80 bytes from 10.4.3.3: icmp_seq=3 ttl=64 time=0.025 ms
+80 bytes from 10.4.3.3: icmp_seq=4 ttl=64 time=0.013 ms
+80 bytes from 10.4.3.3: icmp_seq=5 ttl=64 time=0.013 ms
+
+--- 10.4.3.3 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 15ms
+rtt min/avg/max/mdev = 0.013/0.904/4.437/1.766 ms, ipg/ewma 3.666/2.609 ms
+```
+
+#### Пингуем спайны №1/2 с лифа №2
+```
+leaf2>ping 10.2.1.3
+PING 10.2.1.3 (10.2.1.3) 72(100) bytes of data.
+80 bytes from 10.2.1.3: icmp_seq=1 ttl=64 time=0.970 ms
+80 bytes from 10.2.1.3: icmp_seq=2 ttl=64 time=0.058 ms
+80 bytes from 10.2.1.3: icmp_seq=3 ttl=64 time=0.013 ms
+80 bytes from 10.2.1.3: icmp_seq=4 ttl=64 time=0.011 ms
+80 bytes from 10.2.1.3: icmp_seq=5 ttl=64 time=0.011 ms
+
+--- 10.2.1.3 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 4ms
+rtt min/avg/max/mdev = 0.011/0.212/0.970/0.379 ms, ipg/ewma 1.027/0.577 ms
+
+leaf2>ping 10.2.2.3
+PING 10.2.2.3 (10.2.2.3) 72(100) bytes of data.
+80 bytes from 10.2.2.3: icmp_seq=1 ttl=64 time=3.86 ms
+80 bytes from 10.2.2.3: icmp_seq=2 ttl=64 time=0.039 ms
+80 bytes from 10.2.2.3: icmp_seq=3 ttl=64 time=0.055 ms
+80 bytes from 10.2.2.3: icmp_seq=4 ttl=64 time=0.016 ms
+80 bytes from 10.2.2.3: icmp_seq=5 ttl=64 time=0.024 ms
+
+--- 10.2.2.3 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 13ms
+rtt min/avg/max/mdev = 0.016/0.798/3.858/1.529 ms, ipg/ewma 3.268/2.274 ms
+```
+
+#### Пингуем лифы №1/2/3 со спайна №1
+```
+spine1>ping 10.2.1.0
+PING 10.2.1.0 (10.2.1.0) 72(100) bytes of data.
+80 bytes from 10.2.1.0: icmp_seq=1 ttl=64 time=0.219 ms
+80 bytes from 10.2.1.0: icmp_seq=2 ttl=64 time=0.016 ms
+80 bytes from 10.2.1.0: icmp_seq=3 ttl=64 time=0.009 ms
+80 bytes from 10.2.1.0: icmp_seq=4 ttl=64 time=0.009 ms
+80 bytes from 10.2.1.0: icmp_seq=5 ttl=64 time=0.011 ms
+
+--- 10.2.1.0 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 0.009/0.052/0.219/0.083 ms, ipg/ewma 0.122/0.133 ms
+
+spine1>ping 10.2.1.2
+PING 10.2.1.2 (10.2.1.2) 72(100) bytes of data.
+80 bytes from 10.2.1.2: icmp_seq=1 ttl=64 time=3.15 ms
+80 bytes from 10.2.1.2: icmp_seq=2 ttl=64 time=0.022 ms
+80 bytes from 10.2.1.2: icmp_seq=3 ttl=64 time=0.048 ms
+80 bytes from 10.2.1.2: icmp_seq=4 ttl=64 time=0.012 ms
+80 bytes from 10.2.1.2: icmp_seq=5 ttl=64 time=0.012 ms
+
+--- 10.2.1.2 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 10ms
+rtt min/avg/max/mdev = 0.012/0.649/3.154/1.252 ms, ipg/ewma 2.573/1.858 ms
+
+spine1>ping 10.2.1.4
+PING 10.2.1.4 (10.2.1.4) 72(100) bytes of data.
+80 bytes from 10.2.1.4: icmp_seq=1 ttl=64 time=3.56 ms
+80 bytes from 10.2.1.4: icmp_seq=2 ttl=64 time=0.111 ms
+80 bytes from 10.2.1.4: icmp_seq=3 ttl=64 time=0.012 ms
+80 bytes from 10.2.1.4: icmp_seq=4 ttl=64 time=0.050 ms
+80 bytes from 10.2.1.4: icmp_seq=5 ttl=64 time=0.018 ms
+
+--- 10.2.1.4 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 12ms
+rtt min/avg/max/mdev = 0.012/0.750/3.559/1.404 ms, ipg/ewma 3.001/2.104 ms
+```
+
 
 
 
