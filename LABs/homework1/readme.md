@@ -1,6 +1,6 @@
 # Домашнее задание №1. Проектирование адресного пространства
 ## Топология сети
-Стенд развернут на ПК с Windows 11 с использованием WSL2 (Ubuntu). В Ubuntu установлен Docker Engine и Containerlab. Сетевые устройства эмулируются контейнерами Arista cEOS 4.33.2F, серверы — контейнерами Alpine Linux. Топология создается и управляется Containerlab. Containerlab Desktop используется как графический интерфейс и подключается к Containerlab, работающему в WSL2, по адресу 172.30.229.65:8090. Управление cEOS из CLD выполняется по SSH через отдельную management-сеть 172.20.20.0/24.
+Стенд развернут на ПК с Windows 11 с использованием WSL2 (Ubuntu). В Ubuntu установлен Docker Engine и Containerlab. Сетевые устройства эмулируются контейнерами Arista cEOS 4.33.2F, серверы - контейнерами Alpine Linux. Топология создается и управляется Containerlab. Containerlab Desktop используется как графический интерфейс и подключается к Containerlab, работающему в WSL2, по адресу 172.30.229.65:8090. Управление cEOS из CLD выполняется по SSH через отдельную management-сеть 172.20.20.0/24.
 
 <img width="529" height="407" alt="DC_topology" src="https://github.com/user-attachments/assets/b7d13c4f-9fbd-49b8-91d0-06c0c32bab60" />
 
