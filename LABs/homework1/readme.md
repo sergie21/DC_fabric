@@ -73,6 +73,7 @@
 #### Leaf1
 
 leaf1>show ip interface brief 
+<
                                                                             Address
 Interface        IP Address          Status      Protocol            MTU    Owner  
 ---------------- ------------------- ----------- -------------- ----------- -------
@@ -82,6 +83,7 @@ Ethernet3        10.4.1.0/31         up          up                 1500
 Loopback0        10.0.11.0/32        up          up                65535           
 Loopback1        10.1.11.0/32        up          up                65535           
 Management0      172.20.20.4/24      up          up                 1500           
+>
 
 #### Leaf2
 
