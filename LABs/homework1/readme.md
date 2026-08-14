@@ -233,6 +233,7 @@ PING 10.2.1.4 (10.2.1.4) 72(100) bytes of data.
 rtt min/avg/max/mdev = 0.012/0.750/3.559/1.404 ms, ipg/ewma 3.001/2.104 ms
 ```
 
+Адресация Underlay настроена. 
 
 
 
