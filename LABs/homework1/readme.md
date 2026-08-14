@@ -85,7 +85,7 @@ Management0      172.20.20.4/24      up          up                 1500
 ```
 
 #### Leaf2
-
+```
 leaf2>sh ip interface brief 
                                                                             Address
 Interface        IP Address          Status      Protocol            MTU    Owner  
@@ -96,9 +96,10 @@ Ethernet3        10.4.2.0/31         up          up                 1500
 Loopback0        10.0.12.0/32        up          up                65535           
 Loopback1        10.1.12.0/32        up          up                65535           
 Management0      172.20.20.5/24      up          up                 1500           
+```
 
 #### Leaf3
-
+```
 leaf3>sh ip interface brief 
                                                                             Address
 Interface        IP Address          Status      Protocol            MTU    Owner  
@@ -110,7 +111,7 @@ Ethernet4        10.4.3.2/31         up          up                 1500
 Loopback0        10.0.13.0/32        up          up                65535           
 Loopback1        10.1.13.0/32        up          up                65535           
 Management0      172.20.20.6/24      up          up                 1500           
-
+```
 
 
 
