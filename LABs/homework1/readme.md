@@ -1,4 +1,4 @@
-<img width="1595" height="1067" alt="image" src="https://github.com/user-attachments/assets/7155e67f-b3ad-436e-9bc0-0d4714b295d1" /># Домашнее задание №1. Проектирование адресного пространства
+# Домашнее задание №1. Проектирование адресного пространства
 ## Топология сети
 <img width="529" height="407" alt="DC_topology" src="https://github.com/user-attachments/assets/b7d13c4f-9fbd-49b8-91d0-06c0c32bab60" />
 
@@ -69,7 +69,8 @@
 
 Адрес читается как 10.4.LEAF.SERVER
 
-#### Вывод IP-адресация узлов
+### Вывод IP-адресации узлов
+#### Leaf1
 leaf1>show ip interface brief 
                                                                             Address
 Interface        IP Address          Status      Protocol            MTU    Owner  
@@ -80,6 +81,61 @@ Ethernet3        10.4.1.0/31         up          up                 1500
 Loopback0        10.0.11.0/32        up          up                65535           
 Loopback1        10.1.11.0/32        up          up                65535           
 Management0      172.20.20.4/24      up          up                 1500           
+
+#### Leaf2
+leaf2>sh ip interface brief 
+                                                                            Address
+Interface        IP Address          Status      Protocol            MTU    Owner  
+---------------- ------------------- ----------- -------------- ----------- -------
+Ethernet1        10.2.1.3/31         up          up                 1500           
+Ethernet2        10.2.2.3/31         up          up                 1500           
+Ethernet3        10.4.2.0/31         up          up                 1500           
+Loopback0        10.0.12.0/32        up          up                65535           
+Loopback1        10.1.12.0/32        up          up                65535           
+Management0      172.20.20.5/24      up          up                 1500           
+
+#### Leaf3
+leaf3>sh ip interface brief 
+                                                                            Address
+Interface        IP Address          Status      Protocol            MTU    Owner  
+---------------- ------------------- ----------- -------------- ----------- -------
+Ethernet1        10.2.1.5/31         up          up                 1500           
+Ethernet2        10.2.2.5/31         up          up                 1500           
+Ethernet3        10.4.3.0/31         up          up                 1500           
+Ethernet4        10.4.3.2/31         up          up                 1500           
+Loopback0        10.0.13.0/32        up          up                65535           
+Loopback1        10.1.13.0/32        up          up                65535           
+Management0      172.20.20.6/24      up          up                 1500           
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
