@@ -59,7 +59,7 @@
 где 10.2.2.4/31: 2 = P2P, 2 = Spine2, 4 = адрес Spine2; 
 а 10.2.2.5/31: 2 = P2P, 2 = Spine2, 4 = адрес Leaf3.
 
-#### Leaf-servet адресация
+#### Leaf-server адресация
 | Link          | Leaf interface/IP  | Server interface/IP | Prefix |
 | ------------  | ------------------ | -----------------   | ------ |
 | Leaf1–Server1 | L1 Et3 `10.4.1.0`  | S1 Et1 `10.4.1.1`   | `/31`  |
