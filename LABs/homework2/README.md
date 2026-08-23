@@ -40,6 +40,7 @@
 | Leaf2  | `10.4.2.0/31`   | Ethernet3 | Server2       | `10.4.2.1/31` | Server2     |
 | Leaf3  | `10.4.3.0/31`   | Ethernet3 | Server3       | `10.4.3.1/31` | Server3     |
 | Leaf3  | `10.4.3.2/31`   | Ethernet4 | Server4       | `10.4.3.3/31` | Server4     |
+
 Серверы подключены routed /31 и в OSPF не анонсируются
 
 ## Конфигурация OSPF
