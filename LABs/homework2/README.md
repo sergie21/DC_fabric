@@ -386,4 +386,34 @@ Source Codes:
            via 10.2.2.5, Ethernet3
 
 ```
+## Проверка IP-связности лупбеков через OSPF Underlay
+### Loopbacks'1 между Leaf1 и Leaf3 
+```
+leaf1#ping 10.1.13.0 source 10.1.11.0
+PING 10.1.13.0 (10.1.13.0) from 10.1.11.0 : 72(100) bytes of data.
+80 bytes from 10.1.13.0: icmp_seq=1 ttl=63 time=3.15 ms
+80 bytes from 10.1.13.0: icmp_seq=2 ttl=63 time=1.20 ms
+80 bytes from 10.1.13.0: icmp_seq=3 ttl=63 time=1.75 ms
+80 bytes from 10.1.13.0: icmp_seq=4 ttl=63 time=1.24 ms
+80 bytes from 10.1.13.0: icmp_seq=5 ttl=63 time=1.22 ms
 
+--- 10.1.13.0 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 12ms
+rtt min/avg/max/mdev = 1.199/1.713/3.153/0.748 ms, ipg/ewma 3.094/2.404 ms
+```
+Достижимы
+### Loopbacks'0 между Spine1 и Spine2
+```
+spine1#ping 10.0.2.0 source 10.0.1.0
+PING 10.0.2.0 (10.0.2.0) from 10.0.1.0 : 72(100) bytes of data.
+80 bytes from 10.0.2.0: icmp_seq=1 ttl=63 time=6.75 ms
+80 bytes from 10.0.2.0: icmp_seq=2 ttl=63 time=1.39 ms
+80 bytes from 10.0.2.0: icmp_seq=3 ttl=63 time=1.65 ms
+80 bytes from 10.0.2.0: icmp_seq=4 ttl=63 time=1.12 ms
+80 bytes from 10.0.2.0: icmp_seq=5 ttl=63 time=1.80 ms
+
+--- 10.0.2.0 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 24ms
+rtt min/avg/max/mdev = 1.123/2.539/6.745/2.115 ms, ipg/ewma 6.001/4.574 ms
+```
+Достижимы
