@@ -1,6 +1,46 @@
 # Домашнее задание №2. Построение Underlay с помощью OSPF
-
 Построен Underlay на базе OSPF: 2 Spine, 3 Leaf объединены L3 P2P-соединениями /31 в Area 0. В OSPF анонсируются Loopback0 всех сетевых устройств и Loopback1 Leaf-коммутаторов для IP-достижимости будущих VTEP.
+## Топология сети
+
+## Задание
+1. Настроить OSPF в Underlay сети для IP связности между всеми сетевыми устройствами;
+2. Зафиксировать в документации - план работы, адресное пространство, схему сети, конфигурацию устройств;
+3. Убедиться в наличии IP-связности между устройствами в OSFP домене.
+
+## IP-адресация
+### Underlay P2P/31
+| Device | IP Address/Mask | Port      | Remote Device | Remote Port | Description |
+| ------ | --------------- | --------- | ------------- | ----------- | ----------- |
+| Leaf1  | `10.2.1.1/31`   | Ethernet1 | Spine1        | Ethernet1   | to Spine1   |
+| Leaf1  | `10.2.2.1/31`   | Ethernet2 | Spine2        | Ethernet1   | to Spine2   |
+| Leaf2  | `10.2.1.3/31`   | Ethernet1 | Spine1        | Ethernet2   | to Spine1   |
+| Leaf2  | `10.2.2.3/31`   | Ethernet2 | Spine2        | Ethernet2   | to Spine2   |
+| Leaf3  | `10.2.1.5/31`   | Ethernet1 | Spine1        | Ethernet3   | to Spine1   |
+| Leaf3  | `10.2.2.5/31`   | Ethernet2 | Spine2        | Ethernet3   | to Spine2   |
+| Spine1 | `10.2.1.0/31`   | Ethernet1 | Leaf1         | Ethernet1   | to Leaf1    |
+| Spine1 | `10.2.1.2/31`   | Ethernet2 | Leaf2         | Ethernet1   | to Leaf2    |
+| Spine1 | `10.2.1.4/31`   | Ethernet3 | Leaf3         | Ethernet1   | to Leaf3    |
+| Spine2 | `10.2.2.0/31`   | Ethernet1 | Leaf1         | Ethernet2   | to Leaf1    |
+| Spine2 | `10.2.2.2/31`   | Ethernet2 | Leaf2         | Ethernet2   | to Leaf2    |
+| Spine2 | `10.2.2.4/31`   | Ethernet3 | Leaf3         | Ethernet2   | to Leaf3    |
+
+### Loopback's
+| Device | Loopback0      | Router-ID   | Loopback1 / VTEP |
+| ------ | -------------- | ----------- | ---------------- |
+| Spine1 | `10.0.1.0/32`  | `10.0.1.0`  | —                |
+| Spine2 | `10.0.2.0/32`  | `10.0.2.0`  | —                |
+| Leaf1  | `10.0.11.0/32` | `10.0.11.0` | `10.1.11.0/32`   |
+| Leaf2  | `10.0.12.0/32` | `10.0.12.0` | `10.1.12.0/32`   |
+| Leaf3  | `10.0.13.0/32` | `10.0.13.0` | `10.1.13.0/32`   |
+
+### Серверные подключения
+| Device | IP Address/Mask | Port      | Remote Device | Remote IP     | Description |
+| ------ | --------------- | --------- | ------------- | ------------- | ----------- |
+| Leaf1  | `10.4.1.0/31`   | Ethernet3 | Server1       | `10.4.1.1/31` | Server1     |
+| Leaf2  | `10.4.2.0/31`   | Ethernet3 | Server2       | `10.4.2.1/31` | Server2     |
+| Leaf3  | `10.4.3.0/31`   | Ethernet3 | Server3       | `10.4.3.1/31` | Server3     |
+| Leaf3  | `10.4.3.2/31`   | Ethernet4 | Server4       | `10.4.3.3/31` | Server4     |
+Серверы подключены routed /31 и в OSPF не анонсируются
 
 ## Конфигурация OSPF
 ### Leaf 1
