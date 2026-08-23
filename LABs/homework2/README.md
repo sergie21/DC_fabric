@@ -260,3 +260,37 @@ router ospf 1
 end
 write memory
 ```
+## Проверка OSPF
+## Проверка OSPF соседства
+```
+leaf1>show ip ospf neighbor
+Neighbor ID     Instance VRF      Pri State                  Dead Time   Address         Interface
+10.0.2.0        1        default  0   FULL                   00:00:01    10.2.2.0        Ethernet2
+10.0.1.0        1        default  0   FULL                   00:00:01    10.2.1.0        Ethernet1
+```
+```
+leaf2>show ip ospf neighbor
+Neighbor ID     Instance VRF      Pri State                  Dead Time   Address         Interface
+10.0.2.0        1        default  0   FULL                   00:00:01    10.2.2.2        Ethernet2
+10.0.1.0        1        default  0   FULL                   00:00:01    10.2.1.2        Ethernet1
+```
+```
+leaf3>show ip ospf neighbor
+Neighbor ID     Instance VRF      Pri State                  Dead Time   Address         Interface
+10.0.2.0        1        default  0   FULL                   00:00:01    10.2.2.4        Ethernet2
+10.0.1.0        1        default  0   FULL                   00:00:01    10.2.1.4        Ethernet1
+```
+```
+spine1>show ip ospf neighbor
+Neighbor ID     Instance VRF      Pri State                  Dead Time   Address         Interface
+10.0.12.0       1        default  0   FULL                   00:00:01    10.2.1.3        Ethernet2
+10.0.11.0       1        default  0   FULL                   00:00:01    10.2.1.1        Ethernet1
+10.0.13.0       1        default  0   FULL                   00:00:01    10.2.1.5        Ethernet3
+```
+```
+spine2>show ip ospf neighbor
+Neighbor ID     Instance VRF      Pri State                  Dead Time   Address         Interface
+10.0.12.0       1        default  0   FULL                   00:00:01    10.2.2.3        Ethernet2
+10.0.11.0       1        default  0   FULL                   00:00:01    10.2.2.1        Ethernet1
+10.0.13.0       1        default  0   FULL                   00:00:01    10.2.2.5        Ethernet3
+```
