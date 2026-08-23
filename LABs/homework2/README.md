@@ -51,3 +51,212 @@ router ospf 1
 end
 write memory
 ```
+### Leaf 2
+```
+enable
+configure terminal
+
+interface Ethernet1
+   description TO_SPINE1
+   mtu 9214
+   no switchport
+   ip address 10.2.1.3/31
+   ip ospf dead-interval 3
+   ip ospf hello-interval 1
+   ip ospf network point-to-point
+   ip ospf area 0.0.0.0
+
+interface Ethernet2
+   description TO_SPINE2
+   mtu 9214
+   no switchport
+   ip address 10.2.2.3/31
+   ip ospf dead-interval 3
+   ip ospf hello-interval 1
+   ip ospf network point-to-point
+   ip ospf area 0.0.0.0
+
+interface Ethernet3
+   description TO_SERVER2
+   no switchport
+   ip address 10.4.2.0/31
+
+interface Loopback0
+   description OSPF_ROUTER_ID
+   ip address 10.0.12.0/32
+
+interface Loopback1
+   description VTEP
+   ip address 10.1.12.0/32
+
+ip routing
+
+router ospf 1
+   router-id 10.0.12.0
+   bfd default
+   network 10.0.12.0/32 area 0.0.0.0
+   network 10.1.12.0/32 area 0.0.0.0
+   max-lsa 12000
+   maximum-paths 4
+
+end
+write memory
+```
+### Leaf 3
+```
+enable
+configure terminal
+
+interface Ethernet1
+   description TO_SPINE1
+   mtu 9214
+   no switchport
+   ip address 10.2.1.5/31
+   ip ospf dead-interval 3
+   ip ospf hello-interval 1
+   ip ospf network point-to-point
+   ip ospf area 0.0.0.0
+
+interface Ethernet2
+   description TO_SPINE2
+   mtu 9214
+   no switchport
+   ip address 10.2.2.5/31
+   ip ospf dead-interval 3
+   ip ospf hello-interval 1
+   ip ospf network point-to-point
+   ip ospf area 0.0.0.0
+
+interface Ethernet3
+   description TO_SERVER3
+   no switchport
+   ip address 10.4.3.0/31
+
+interface Ethernet4
+   description TO_SERVER4
+   no switchport
+   ip address 10.4.3.2/31
+
+interface Loopback0
+   description OSPF_ROUTER_ID
+   ip address 10.0.13.0/32
+
+interface Loopback1
+   description VTEP
+   ip address 10.1.13.0/32
+
+ip routing
+
+router ospf 1
+   router-id 10.0.13.0
+   bfd default
+   network 10.0.13.0/32 area 0.0.0.0
+   network 10.1.13.0/32 area 0.0.0.0
+   max-lsa 12000
+   maximum-paths 4
+
+end
+write memory
+```
+### Spine 1
+```
+enable
+configure terminal
+
+interface Ethernet1
+   description TO_LEAF1
+   mtu 9214
+   no switchport
+   ip address 10.2.1.0/31
+   ip ospf dead-interval 3
+   ip ospf hello-interval 1
+   ip ospf network point-to-point
+   ip ospf area 0.0.0.0
+
+interface Ethernet2
+   description TO_LEAF2
+   mtu 9214
+   no switchport
+   ip address 10.2.1.2/31
+   ip ospf dead-interval 3
+   ip ospf hello-interval 1
+   ip ospf network point-to-point
+   ip ospf area 0.0.0.0
+
+interface Ethernet3
+   description TO_LEAF3
+   mtu 9214
+   no switchport
+   ip address 10.2.1.4/31
+   ip ospf dead-interval 3
+   ip ospf hello-interval 1
+   ip ospf network point-to-point
+   ip ospf area 0.0.0.0
+
+interface Loopback0
+   description OSPF_ROUTER_ID
+   ip address 10.0.1.0/32
+
+ip routing
+
+router ospf 1
+   router-id 10.0.1.0
+   bfd default
+   network 10.0.1.0/32 area 0.0.0.0
+   max-lsa 12000
+   maximum-paths 4
+
+end
+write memory
+```
+### Spine 2
+```
+enable
+configure terminal
+
+interface Ethernet1
+   description TO_LEAF1
+   mtu 9214
+   no switchport
+   ip address 10.2.2.0/31
+   ip ospf dead-interval 3
+   ip ospf hello-interval 1
+   ip ospf network point-to-point
+   ip ospf area 0.0.0.0
+
+interface Ethernet2
+   description TO_LEAF2
+   mtu 9214
+   no switchport
+   ip address 10.2.2.2/31
+   ip ospf dead-interval 3
+   ip ospf hello-interval 1
+   ip ospf network point-to-point
+   ip ospf area 0.0.0.0
+
+interface Ethernet3
+   description TO_LEAF3
+   mtu 9214
+   no switchport
+   ip address 10.2.2.4/31
+   ip ospf dead-interval 3
+   ip ospf hello-interval 1
+   ip ospf network point-to-point
+   ip ospf area 0.0.0.0
+
+interface Loopback0
+   description OSPF_ROUTER_ID
+   ip address 10.0.2.0/32
+
+ip routing
+
+router ospf 1
+   router-id 10.0.2.0
+   bfd default
+   network 10.0.2.0/32 area 0.0.0.0
+   max-lsa 12000
+   maximum-paths 4
+
+end
+write memory
+```
