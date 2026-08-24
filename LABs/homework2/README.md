@@ -5,7 +5,7 @@
 ## Задание
 1. Настроить OSPF в Underlay сети для IP связности между всеми сетевыми устройствами;
 2. Зафиксировать в документации - план работы, адресное пространство, схему сети, конфигурацию устройств;
-3. Убедиться в наличии IP-связности между устройствами в OSFP домене.
+3. Убедиться в наличии IP-связности между устройствами в OSPF-домене.
 
 ## IP-адресация
 ### Underlay P2P/31
@@ -25,13 +25,13 @@
 | Spine2 | `10.2.2.4/31`   | Ethernet3 | Leaf3         | Ethernet2   | to Leaf3    |
 
 ### Loopback's
-| Device | Loopback0      | Router-ID   | Loopback1 / VTEP |
-| ------ | -------------- | ----------- | ---------------- |
-| Spine1 | `10.0.1.0/32`  | `10.0.1.0`  | —                |
-| Spine2 | `10.0.2.0/32`  | `10.0.2.0`  | —                |
-| Leaf1  | `10.0.11.0/32` | `10.0.11.0` | `10.1.11.0/32`   |
-| Leaf2  | `10.0.12.0/32` | `10.0.12.0` | `10.1.12.0/32`   |
-| Leaf3  | `10.0.13.0/32` | `10.0.13.0` | `10.1.13.0/32`   |
+| Device | Loopback0       | Router-ID    | Loopback1 / VTEP |
+| ------ | --------------  | -----------  | ---------------- |
+| Spine1 | `10.0.1.0/32`   | `10.0.1.0`   | —                |
+| Spine2 | `10.0.2.0/32`   | `10.0.2.0`   | —                |
+| Leaf1  | `10.0.101.0/32` | `10.0.101.0` | `10.1.101.0/32`   |
+| Leaf2  | `10.0.102.0/32` | `10.0.102.0` | `10.1.102.0/32`   |
+| Leaf3  | `10.0.103.0/32` | `10.0.103.0` | `10.1.103.0/32`   |
 
 ### Серверные подключения
 | Device | IP Address/Mask | Port      | Remote Device | Remote IP     | Description |
@@ -76,19 +76,19 @@ interface Ethernet3
 
 interface Loopback0
    description OSPF_ROUTER_ID
-   ip address 10.0.11.0/32
+   ip address 10.0.101.0/32
 
 interface Loopback1
    description VTEP
-   ip address 10.1.11.0/32
+   ip address 10.1.101.0/32
 
 ip routing
 
 router ospf 1
-   router-id 10.0.11.0
+   router-id 10.0.101.0
    bfd default
-   network 10.0.11.0/32 area 0.0.0.0
-   network 10.1.11.0/32 area 0.0.0.0
+   network 10.0.101.0/32 area 0.0.0.0
+   network 10.1.101.0/32 area 0.0.0.0
    max-lsa 12000
    maximum-paths 4
 
@@ -127,19 +127,19 @@ interface Ethernet3
 
 interface Loopback0
    description OSPF_ROUTER_ID
-   ip address 10.0.12.0/32
+   ip address 10.0.102.0/32
 
 interface Loopback1
    description VTEP
-   ip address 10.1.12.0/32
+   ip address 10.1.102.0/32
 
 ip routing
 
 router ospf 1
-   router-id 10.0.12.0
+   router-id 10.0.102.0
    bfd default
-   network 10.0.12.0/32 area 0.0.0.0
-   network 10.1.12.0/32 area 0.0.0.0
+   network 10.0.102.0/32 area 0.0.0.0
+   network 10.1.102.0/32 area 0.0.0.0
    max-lsa 12000
    maximum-paths 4
 
@@ -183,19 +183,19 @@ interface Ethernet4
 
 interface Loopback0
    description OSPF_ROUTER_ID
-   ip address 10.0.13.0/32
+   ip address 10.0.103.0/32
 
 interface Loopback1
    description VTEP
-   ip address 10.1.13.0/32
+   ip address 10.1.103.0/32
 
 ip routing
 
 router ospf 1
-   router-id 10.0.13.0
+   router-id 10.0.103.0
    bfd default
-   network 10.0.13.0/32 area 0.0.0.0
-   network 10.1.13.0/32 area 0.0.0.0
+   network 10.0.103.0/32 area 0.0.0.0
+   network 10.1.103.0/32 area 0.0.0.0
    max-lsa 12000
    maximum-paths 4
 
@@ -326,17 +326,17 @@ Neighbor ID     Instance VRF      Pri State                  Dead Time   Address
 ```
 ```
 spine1>show ip ospf neighbor
-Neighbor ID     Instance VRF      Pri State                  Dead Time   Address         Interface
-10.0.12.0       1        default  0   FULL                   00:00:01    10.2.1.3        Ethernet2
-10.0.11.0       1        default  0   FULL                   00:00:01    10.2.1.1        Ethernet1
-10.0.13.0       1        default  0   FULL                   00:00:01    10.2.1.5        Ethernet3
+Neighbor ID     Instance VRF      Pri State                   Dead Time   Address         Interface
+10.0.102.0       1        default  0   FULL                   00:00:01    10.2.1.3        Ethernet2
+10.0.101.0       1        default  0   FULL                   00:00:01    10.2.1.1        Ethernet1
+10.0.103.0       1        default  0   FULL                   00:00:01    10.2.1.5        Ethernet3
 ```
 ```
 spine2>show ip ospf neighbor
-Neighbor ID     Instance VRF      Pri State                  Dead Time   Address         Interface
-10.0.12.0       1        default  0   FULL                   00:00:01    10.2.2.3        Ethernet2
-10.0.11.0       1        default  0   FULL                   00:00:01    10.2.2.1        Ethernet1
-10.0.13.0       1        default  0   FULL                   00:00:01    10.2.2.5        Ethernet3
+Neighbor ID     Instance VRF      Pri State                   Dead Time   Address         Interface
+10.0.102.0       1        default  0   FULL                   00:00:01    10.2.2.3        Ethernet2
+10.0.101.0       1        default  0   FULL                   00:00:01    10.2.2.1        Ethernet1
+10.0.103.0       1        default  0   FULL                   00:00:01    10.2.2.5        Ethernet3
 ```
 Каждый Leaf установил по 2 соседства со Spine1 и Spine2 (FULL), каждый Spine установил по три соседства с Leaf1–Leaf3 (FULL).
 
@@ -364,16 +364,16 @@ Source Codes:
            via 10.2.1.0, Ethernet1
  O        10.0.2.0/32 [110/20]
            via 10.2.2.0, Ethernet2
- O        10.0.12.0/32 [110/30]
+ O        10.0.102.0/32 [110/30]
            via 10.2.1.0, Ethernet1
            via 10.2.2.0, Ethernet2
- O        10.0.13.0/32 [110/30]
+ O        10.0.103.0/32 [110/30]
            via 10.2.1.0, Ethernet1
            via 10.2.2.0, Ethernet2
- O        10.1.12.0/32 [110/30]
+ O        10.1.102.0/32 [110/30]
            via 10.2.1.0, Ethernet1
            via 10.2.2.0, Ethernet2
- O        10.1.13.0/32 [110/30]
+ O        10.1.103.0/32 [110/30]
            via 10.2.1.0, Ethernet1
            via 10.2.2.0, Ethernet2
  O        10.2.1.2/31 [110/20]
@@ -410,17 +410,17 @@ Source Codes:
            via 10.2.2.1, Ethernet1
            via 10.2.2.3, Ethernet2
            via 10.2.2.5, Ethernet3
- O        10.0.11.0/32 [110/20]
+ O        10.0.101.0/32 [110/20]
            via 10.2.2.1, Ethernet1
- O        10.0.12.0/32 [110/20]
+ O        10.0.102.0/32 [110/20]
            via 10.2.2.3, Ethernet2
- O        10.0.13.0/32 [110/20]
+ O        10.0.103.0/32 [110/20]
            via 10.2.2.5, Ethernet3
- O        10.1.11.0/32 [110/20]
+ O        10.1.101.0/32 [110/20]
            via 10.2.2.1, Ethernet1
- O        10.1.12.0/32 [110/20]
+ O        10.1.102.0/32 [110/20]
            via 10.2.2.3, Ethernet2
- O        10.1.13.0/32 [110/20]
+ O        10.1.103.0/32 [110/20]
            via 10.2.2.5, Ethernet3
  O        10.2.1.0/31 [110/20]
            via 10.2.2.1, Ethernet1
@@ -433,15 +433,15 @@ Source Codes:
 ## Проверка IP-связности лупбеков через OSPF Underlay
 ### Loopbacks'1 между Leaf1 и Leaf3 
 ```
-leaf1#ping 10.1.13.0 source 10.1.11.0
-PING 10.1.13.0 (10.1.13.0) from 10.1.11.0 : 72(100) bytes of data.
-80 bytes from 10.1.13.0: icmp_seq=1 ttl=63 time=3.15 ms
-80 bytes from 10.1.13.0: icmp_seq=2 ttl=63 time=1.20 ms
-80 bytes from 10.1.13.0: icmp_seq=3 ttl=63 time=1.75 ms
-80 bytes from 10.1.13.0: icmp_seq=4 ttl=63 time=1.24 ms
-80 bytes from 10.1.13.0: icmp_seq=5 ttl=63 time=1.22 ms
+leaf1#ping 10.1.103.0 source 10.1.101.0
+PING 10.1.103.0 (10.1.103.0) from 10.1.101.0 : 72(100) bytes of data.
+80 bytes from 10.1.103.0: icmp_seq=1 ttl=63 time=3.15 ms
+80 bytes from 10.1.103.0: icmp_seq=2 ttl=63 time=1.20 ms
+80 bytes from 10.1.103.0: icmp_seq=3 ttl=63 time=1.75 ms
+80 bytes from 10.1.103.0: icmp_seq=4 ttl=63 time=1.24 ms
+80 bytes from 10.1.103.0: icmp_seq=5 ttl=63 time=1.22 ms
 
---- 10.1.13.0 ping statistics ---
+--- 10.1.103.0 ping statistics ---
 5 packets transmitted, 5 received, 0% packet loss, time 12ms
 rtt min/avg/max/mdev = 1.199/1.713/3.153/0.748 ms, ipg/ewma 3.094/2.404 ms
 ```
