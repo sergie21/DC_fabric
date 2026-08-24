@@ -1,5 +1,4 @@
 # Домашнее задание №2. Построение Underlay с помощью OSPF
-Построен Underlay на базе OSPF: 2 Spine, 3 Leaf объединены L3 P2P-соединениями /31 в Area 0. В OSPF анонсируются Loopback0 всех сетевых устройств и Loopback1 Leaf-коммутаторов для IP-достижимости будущих VTEP.
 ## Топология сети
 <img width="795" height="741" alt="схема 2 ДЗ" src="https://github.com/user-attachments/assets/f4474aa8-9d9f-4a01-ab0f-1ccba4a96b20" />
 
@@ -462,3 +461,5 @@ PING 10.0.2.0 (10.0.2.0) from 10.0.1.0 : 72(100) bytes of data.
 rtt min/avg/max/mdev = 1.123/2.539/6.745/2.115 ms, ipg/ewma 6.001/4.574 ms
 ```
 Достижимы
+
+## Построен Underlay на базе OSPF: 2 Spine, 3 Leaf объединены L3 P2P-соединениями /31 в Area 0. В OSPF анонсируются Loopback0 всех сетевых устройств и Loopback1 Leaf-коммутаторов для IP-достижимости будущих VTEP.
