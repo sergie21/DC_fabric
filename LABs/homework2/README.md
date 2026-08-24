@@ -1,7 +1,7 @@
 # Домашнее задание №2. Построение Underlay с помощью OSPF
 Построен Underlay на базе OSPF: 2 Spine, 3 Leaf объединены L3 P2P-соединениями /31 в Area 0. В OSPF анонсируются Loopback0 всех сетевых устройств и Loopback1 Leaf-коммутаторов для IP-достижимости будущих VTEP.
 ## Топология сети
-
+<img width="1061" height="988" alt="схема 2 ДЗ" src="https://github.com/user-attachments/assets/f4474aa8-9d9f-4a01-ab0f-1ccba4a96b20" />
 ## Задание
 1. Настроить OSPF в Underlay сети для IP связности между всеми сетевыми устройствами;
 2. Зафиксировать в документации - план работы, адресное пространство, схему сети, конфигурацию устройств;
@@ -41,7 +41,7 @@
 | Leaf3  | `10.4.3.0/31`   | Ethernet3 | Server3       | `10.4.3.1/31` | Server3     |
 | Leaf3  | `10.4.3.2/31`   | Ethernet4 | Server4       | `10.4.3.3/31` | Server4     |
 
-Серверы подключены routed /31 и в OSPF не анонсируются
+Серверные сети подключены к Leaf через routed /31-интерфейсы и в OSPF не анонсируются.
 
 ## Конфигурация OSPF
 ### Leaf 1
@@ -431,7 +431,7 @@ Source Codes:
 
 ```
 ## Проверка IP-связности лупбеков через OSPF Underlay
-### Loopbacks'1 между Leaf1 и Leaf3 
+### Loopback1 между Leaf1 и Leaf3 
 ```
 leaf1#ping 10.1.103.0 source 10.1.101.0
 PING 10.1.103.0 (10.1.103.0) from 10.1.101.0 : 72(100) bytes of data.
@@ -446,7 +446,7 @@ PING 10.1.103.0 (10.1.103.0) from 10.1.101.0 : 72(100) bytes of data.
 rtt min/avg/max/mdev = 1.199/1.713/3.153/0.748 ms, ipg/ewma 3.094/2.404 ms
 ```
 Достижимы
-### Loopbacks'0 между Spine1 и Spine2
+### Loopback0 между Spine1 и Spine2
 ```
 spine1#ping 10.0.2.0 source 10.0.1.0
 PING 10.0.2.0 (10.0.2.0) from 10.0.1.0 : 72(100) bytes of data.
