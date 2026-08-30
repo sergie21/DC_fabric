@@ -240,3 +240,120 @@ ip routing
 
 end
 ```
+
+Проверка IS-IS на Spine2
+1
+```
+spine2#sh isis neighbors
+ 
+Instance  VRF      System Id        Type Interface          SNPA              State Hold time   Circuit Id          
+UNDERLAY  default  leaf1            L1   Ethernet1          P2P               UP    20          29                  
+UNDERLAY  default  leaf2            L1   Ethernet2          P2P               UP    27          2E                  
+UNDERLAY  default  leaf3            L1   Ethernet3          P2P               UP    29          34                  
+```
+2
+```
+spine2#sh isis database
+Legend:
+H - hostname conflict
+U - node unreachable
+
+IS-IS Instance: UNDERLAY VRF: default
+  IS-IS Level 1 Link State Database
+    LSPID                   Seq Num  Cksum  Life Length IS  Received LSPID        Flags
+    spine1.00-00                  8  13519   599    146 L1  0100.0000.1000.00-00  <>
+    spine2.00-00                  8  48683  1126    146 L1  0100.0000.2000.00-00  <>
+    leaf1.00-00                   7  11736  1038    134 L1  0100.0010.1000.00-00  <>
+    leaf2.00-00                   6  26752   550    134 L1  0100.0010.2000.00-00  <>
+    leaf3.00-00                   6  24427   640    134 L1  0100.0010.3000.00-00  <>
+```
+3
+```
+spine2#sh ip route isis
+
+VRF: default
+Source Codes:
+       C - connected, S - static, K - kernel,
+       O - OSPF, IA - OSPF inter area, E1 - OSPF external type 1,
+       E2 - OSPF external type 2, N1 - OSPF NSSA external type 1,
+       N2 - OSPF NSSA external type2, B - Other BGP Routes,
+       B I - iBGP, B E - eBGP, R - RIP, I L1 - IS-IS level 1,
+       I L2 - IS-IS level 2, O3 - OSPFv3, A B - BGP Aggregate,
+       A O - OSPF Summary, NG - Nexthop Group Static Route,
+       V - VXLAN Control Service, M - Martian,
+       DH - DHCP client installed default route,
+       DP - Dynamic Policy Route, L - VRF Leaked,
+       G  - gRIBI, RC - Route Cache Route,
+       CL - CBF Leaked Route
+
+ I L1     10.0.1.0/32 [115/30]
+           via 10.2.2.1, Ethernet1
+           via 10.2.2.3, Ethernet2
+           via 10.2.2.5, Ethernet3
+ I L1     10.0.101.0/32 [115/20]
+           via 10.2.2.1, Ethernet1
+ I L1     10.0.102.0/32 [115/20]
+           via 10.2.2.3, Ethernet2
+ I L1     10.0.103.0/32 [115/20]
+           via 10.2.2.5, Ethernet3
+ I L1     10.1.101.0/32 [115/20]
+           via 10.2.2.1, Ethernet1
+ I L1     10.1.102.0/32 [115/20]
+           via 10.2.2.3, Ethernet2
+ I L1     10.1.103.0/32 [115/20]
+           via 10.2.2.5, Ethernet3
+ I L1     10.2.1.0/31 [115/20]
+           via 10.2.2.1, Ethernet1
+ I L1     10.2.1.2/31 [115/20]
+           via 10.2.2.3, Ethernet2
+ I L1     10.2.1.4/31 [115/20]
+           via 10.2.2.5, Ethernet3
+```
+Пинги со Spine2
+```
+spine2#
+spine2#ping 10.0.101.0 source 10.0.2.0
+PING 10.0.101.0 (10.0.101.0) from 10.0.2.0 : 72(100) bytes of data.
+80 bytes from 10.0.101.0: icmp_seq=1 ttl=64 time=1.41 ms
+80 bytes from 10.0.101.0: icmp_seq=2 ttl=64 time=0.040 ms
+80 bytes from 10.0.101.0: icmp_seq=3 ttl=64 time=0.045 ms
+80 bytes from 10.0.101.0: icmp_seq=4 ttl=64 time=0.106 ms
+80 bytes from 10.0.101.0: icmp_seq=5 ttl=64 time=0.042 ms
+
+--- 10.0.101.0 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 5ms
+rtt min/avg/max/mdev = 0.040/0.328/1.411/0.541 ms, ipg/ewma 1.168/0.851 ms
+spine2#ping 10.0.103.0 source 10.0.2.0
+PING 10.0.103.0 (10.0.103.0) from 10.0.2.0 : 72(100) bytes of data.
+80 bytes from 10.0.103.0: icmp_seq=1 ttl=64 time=3.16 ms
+80 bytes from 10.0.103.0: icmp_seq=2 ttl=64 time=0.026 ms
+80 bytes from 10.0.103.0: icmp_seq=3 ttl=64 time=0.102 ms
+80 bytes from 10.0.103.0: icmp_seq=4 ttl=64 time=0.044 ms
+80 bytes from 10.0.103.0: icmp_seq=5 ttl=64 time=0.150 ms
+
+--- 10.0.103.0 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 10ms
+rtt min/avg/max/mdev = 0.026/0.696/3.158/1.231 ms, ipg/ewma 2.611/1.886 ms
+spine2#ping 10.1.102.0 source 10.0.2.0
+PING 10.1.102.0 (10.1.102.0) from 10.0.2.0 : 72(100) bytes of data.
+80 bytes from 10.1.102.0: icmp_seq=1 ttl=64 time=3.87 ms
+80 bytes from 10.1.102.0: icmp_seq=2 ttl=64 time=0.038 ms
+80 bytes from 10.1.102.0: icmp_seq=3 ttl=64 time=0.047 ms
+80 bytes from 10.1.102.0: icmp_seq=4 ttl=64 time=0.042 ms
+80 bytes from 10.1.102.0: icmp_seq=5 ttl=64 time=0.106 ms
+
+--- 10.1.102.0 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 13ms
+rtt min/avg/max/mdev = 0.038/0.821/3.874/1.526 ms, ipg/ewma 3.278/2.296 ms
+spine2#ping 10.0.1.0 source 10.0.2.0
+PING 10.0.1.0 (10.0.1.0) from 10.0.2.0 : 72(100) bytes of data.
+80 bytes from 10.0.1.0: icmp_seq=1 ttl=63 time=6.26 ms
+80 bytes from 10.0.1.0: icmp_seq=2 ttl=63 time=0.818 ms
+80 bytes from 10.0.1.0: icmp_seq=3 ttl=63 time=1.61 ms
+80 bytes from 10.0.1.0: icmp_seq=4 ttl=63 time=1.01 ms
+80 bytes from 10.0.1.0: icmp_seq=5 ttl=63 time=1.10 ms
+
+--- 10.0.1.0 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 23ms
+rtt min/avg/max/mdev = 0.818/2.159/6.262/2.068 ms, ipg/ewma 5.816/4.140 ms
+```
