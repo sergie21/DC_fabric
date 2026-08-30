@@ -1,5 +1,5 @@
 Spine1
-'''
+```
 enable
 configure terminal
 
@@ -48,3 +48,4 @@ ip routing
 
 end
 '''
+
