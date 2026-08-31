@@ -1,5 +1,6 @@
 # Домашнее задание №2. Построение Underlay с помощью IS-IS
 ## Топология сети
+<img width="884" height="818" alt="IS-IS" src="https://github.com/user-attachments/assets/6003e2ea-215d-40ea-972c-5f98a291b86d" />
 
 ## Задание
 1. Настроить IS-IS в Underlay сети для IP-связности между всеми сетевыми устройствами;
