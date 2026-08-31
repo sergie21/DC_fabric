@@ -44,7 +44,11 @@
 
 Серверные сети подключены к Leaf через routed /31-интерфейсы и в OSPF не анонсируются.
 
-Spine1
+## Конфигурация OSPF
+
+MTU определен как 9000, учтены некоторые рекомендации урока IS-IS (P2P, BFD, L1 для одного POD с малым количеством устройств)
+
+### Spine1
 ```
 enable
 configure terminal
@@ -94,8 +98,7 @@ ip routing
 
 end
 ```
-
-Spine2
+### Spine2
 ```
 enable
 configure terminal
@@ -145,8 +148,7 @@ ip routing
 
 end
 ```
-
-Leaf1
+### Leaf1
 ```
 enable
 configure terminal
@@ -192,8 +194,7 @@ ip routing
 
 end
 ```
-
-Leaf2
+### Leaf2
 ```
 enable
 configure terminal
@@ -239,8 +240,7 @@ ip routing
 
 end
 ```
-
-Leaf3
+### Leaf3
 ```
 enable
 configure terminal
@@ -287,8 +287,8 @@ ip routing
 end
 ```
 
-Проверка IS-IS на Spine2
-1
+### Проверка IS-IS на Spine2
+Соседи:
 ```
 spine2#sh isis neighbors
  
@@ -297,7 +297,7 @@ UNDERLAY  default  leaf1            L1   Ethernet1          P2P               UP
 UNDERLAY  default  leaf2            L1   Ethernet2          P2P               UP    27          2E                  
 UNDERLAY  default  leaf3            L1   Ethernet3          P2P               UP    29          34                  
 ```
-2
+БД:
 ```
 spine2#sh isis database
 Legend:
@@ -313,7 +313,7 @@ IS-IS Instance: UNDERLAY VRF: default
     leaf2.00-00                   6  26752   550    134 L1  0100.0010.2000.00-00  <>
     leaf3.00-00                   6  24427   640    134 L1  0100.0010.3000.00-00  <>
 ```
-3
+Маршруты:
 ```
 spine2#sh ip route isis
 
@@ -355,7 +355,7 @@ Source Codes:
  I L1     10.2.1.4/31 [115/20]
            via 10.2.2.5, Ethernet3
 ```
-Пинги со Spine2
+### Выборочные пинги со Spine2
 ```
 spine2#
 spine2#ping 10.0.101.0 source 10.0.2.0
@@ -403,3 +403,4 @@ PING 10.0.1.0 (10.0.1.0) from 10.0.2.0 : 72(100) bytes of data.
 5 packets transmitted, 5 received, 0% packet loss, time 23ms
 rtt min/avg/max/mdev = 0.818/2.159/6.262/2.068 ms, ipg/ewma 5.816/4.140 ms
 ```
+Все достижимо, ECMP работает
