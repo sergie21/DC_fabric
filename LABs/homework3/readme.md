@@ -23,7 +23,7 @@
 | Spine2 | `10.2.2.2/31`   | Ethernet2 | Leaf2         | Ethernet2   | to Leaf2    |
 | Spine2 | `10.2.2.4/31`   | Ethernet3 | Leaf3         | Ethernet2   | to Leaf3    |
 
-### Loopback's
+### Loopback's и NET-адреса
 | Device | Loopback0       | NET Address                   | Level |
 | ------ | --------------  | ----------------------        | ----- |
 | Spine1 | `10.0.1.0/32`   | `49.0001.0100.0000.1000.00`   | L1    |
