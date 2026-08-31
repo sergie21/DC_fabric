@@ -288,7 +288,7 @@ end
 ```
 
 ### Проверка IS-IS на Spine2
-Соседи:
+Соседи в АПе:
 ```
 spine2#sh isis neighbors
  
@@ -297,7 +297,7 @@ UNDERLAY  default  leaf1            L1   Ethernet1          P2P               UP
 UNDERLAY  default  leaf2            L1   Ethernet2          P2P               UP    27          2E                  
 UNDERLAY  default  leaf3            L1   Ethernet3          P2P               UP    29          34                  
 ```
-БД:
+В БД все устройства:
 ```
 spine2#sh isis database
 Legend:
@@ -313,7 +313,7 @@ IS-IS Instance: UNDERLAY VRF: default
     leaf2.00-00                   6  26752   550    134 L1  0100.0010.2000.00-00  <>
     leaf3.00-00                   6  24427   640    134 L1  0100.0010.3000.00-00  <>
 ```
-Маршруты:
+Маршруты, в тч ECMP:
 ```
 spine2#sh ip route isis
 
@@ -403,4 +403,4 @@ PING 10.0.1.0 (10.0.1.0) from 10.0.2.0 : 72(100) bytes of data.
 5 packets transmitted, 5 received, 0% packet loss, time 23ms
 rtt min/avg/max/mdev = 0.818/2.159/6.262/2.068 ms, ipg/ewma 5.816/4.140 ms
 ```
-Все достижимо, ECMP работает
+Все достижимо
