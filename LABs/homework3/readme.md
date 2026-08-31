@@ -1,3 +1,49 @@
+# Домашнее задание №2. Построение Underlay с помощью IS-IS
+## Топология сети
+
+## Задание
+1. Настроить IS-IS в Underlay сети для IP-связности между всеми сетевыми устройствами;
+2. Зафиксировать в документации - план работы, адресное пространство, схему сети, конфигурацию устройств;
+3. Убедиться в наличии IP-связности между устройствами в IS-IS домене.
+
+## IP-адресация
+### Underlay P2P/31
+| Device | IP Address/Mask | Port      | Remote Device | Remote Port | Description |
+| ------ | --------------- | --------- | ------------- | ----------- | ----------- |
+| Leaf1  | `10.2.1.1/31`   | Ethernet1 | Spine1        | Ethernet1   | to Spine1   |
+| Leaf1  | `10.2.2.1/31`   | Ethernet2 | Spine2        | Ethernet1   | to Spine2   |
+| Leaf2  | `10.2.1.3/31`   | Ethernet1 | Spine1        | Ethernet2   | to Spine1   |
+| Leaf2  | `10.2.2.3/31`   | Ethernet2 | Spine2        | Ethernet2   | to Spine2   |
+| Leaf3  | `10.2.1.5/31`   | Ethernet1 | Spine1        | Ethernet3   | to Spine1   |
+| Leaf3  | `10.2.2.5/31`   | Ethernet2 | Spine2        | Ethernet3   | to Spine2   |
+| Spine1 | `10.2.1.0/31`   | Ethernet1 | Leaf1         | Ethernet1   | to Leaf1    |
+| Spine1 | `10.2.1.2/31`   | Ethernet2 | Leaf2         | Ethernet1   | to Leaf2    |
+| Spine1 | `10.2.1.4/31`   | Ethernet3 | Leaf3         | Ethernet1   | to Leaf3    |
+| Spine2 | `10.2.2.0/31`   | Ethernet1 | Leaf1         | Ethernet2   | to Leaf1    |
+| Spine2 | `10.2.2.2/31`   | Ethernet2 | Leaf2         | Ethernet2   | to Leaf2    |
+| Spine2 | `10.2.2.4/31`   | Ethernet3 | Leaf3         | Ethernet2   | to Leaf3    |
+
+### Loopback's
+| Device | Loopback0       | NET Address                   | Level |
+| ------ | --------------  | ----------------------        | ----- |
+| Spine1 | `10.0.1.0/32`   | `49.0001.0100.0000.1000.00`   | L1    |
+| Spine2 | `10.0.2.0/32`   | `49.0001.0100.0000.2000.00`   | L1    |
+| Leaf1  | `10.0.101.0/32` | `49.0001.0100.0001.0100.00`   | L1    |
+| Leaf2  | `10.0.102.0/32` | `49.0001.0100.0001.0200.00`   | L1    |
+| Leaf3  | `10.0.103.0/32` | `49.0001.0100.0001.0300.00`   | L1    |
+
+Все устройства находятся в L1-домене
+
+### Серверные подключения
+| Device | IP Address/Mask | Port      | Remote Device | Remote IP     | Description |
+| ------ | --------------- | --------- | ------------- | ------------- | ----------- |
+| Leaf1  | `10.4.1.0/31`   | Ethernet3 | Server1       | `10.4.1.1/31` | Server1     |
+| Leaf2  | `10.4.2.0/31`   | Ethernet3 | Server2       | `10.4.2.1/31` | Server2     |
+| Leaf3  | `10.4.3.0/31`   | Ethernet3 | Server3       | `10.4.3.1/31` | Server3     |
+| Leaf3  | `10.4.3.2/31`   | Ethernet4 | Server4       | `10.4.3.3/31` | Server4     |
+
+Серверные сети подключены к Leaf через routed /31-интерфейсы и в OSPF не анонсируются.
+
 Spine1
 ```
 enable
