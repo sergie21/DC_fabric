@@ -45,7 +45,7 @@
 
 ## Конфигурация iBGP
 
-Выбран iBGP. Учтены рекомендации уроков iBGP/eBGP (пароль DC_FABRIC для аутентификации на линках leaf-spine, multipath, 2 spines как 2 route-reflectors не в кластере, route-map на Lo0, подкручены таймеры 3/9, включен BFD)
+Выбран iBGP. Учтены рекомендации уроков iBGP/eBGP (пароль DC_FABRIC для аутентификации на линках leaf-spine, multipath, 2 spines как 2 route-reflectors не в кластере, route-map на Lo0, подкручены таймеры 3/9, включен BFD). На Spines включен next-hop-self для соседей leafs.
 
 ### Spine1
 ```
