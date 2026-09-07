@@ -276,7 +276,6 @@ PING 10.0.102.0 (10.0.102.0) from 10.0.103.0 : 72(100) bytes of data.
 --- 10.0.102.0 ping statistics ---
 5 packets transmitted, 5 received, 0% packet loss, time 8ms
 rtt min/avg/max/mdev = 1.262/1.450/1.834/0.204 ms, ipg/ewma 2.028/1.632 ms
-
 ```
 Все доступно
 ### Проверка отказоустойчивости Leaf1
@@ -326,7 +325,6 @@ PING 10.0.102.0 (10.0.102.0) from 10.0.101.0 : 72(100) bytes of data.
 --- 10.0.102.0 ping statistics ---
 5 packets transmitted, 5 received, 0% packet loss, time 8ms
 rtt min/avg/max/mdev = 1.064/1.515/2.194/0.430 ms, ipg/ewma 2.113/1.831 ms
-
 ```
 После no shut на интерфейсе связность по iBGP восстанавливается, ECMP продолжает работать
 ### Проверка аутентификации на Leaf1
@@ -342,7 +340,6 @@ Neighbor Status Codes: m - Under maintenance
   Description              Neighbor V AS           MsgRcvd   MsgSent  InQ OutQ  Up/Down State   PfxRcd PfxAcc
   SPINE1                   10.2.1.0 4 65100           1003       999    0    0 00:00:01 Active
   SPINE2                   10.2.2.0 4 65100           1092      1079    0    0 00:43:24 Estab   3      3 
-
 ```
 Возвращаем верный пароль, 2 сессии продолжают работать в Established
 ```
