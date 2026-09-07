@@ -1,5 +1,6 @@
 # Домашнее задание №4. Построение Underlay с помощью iBGP
 ## Топология сети
+<img width="884" height="818" alt="iBGP" src="https://github.com/user-attachments/assets/e323ba55-2fba-4b09-9a4c-358f28763550" />
 
 ## Задание
 1. Настроить BGP в Underlay сети, для IP связанности между всеми сетевыми устройствами;
