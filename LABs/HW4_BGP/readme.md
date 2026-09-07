@@ -331,8 +331,8 @@ rtt min/avg/max/mdev = 1.064/1.515/2.194/0.430 ms, ipg/ewma 2.113/1.831 ms
 ### Проверка аутентификации на Leaf1
 После установки некорректного пароля и переустановления сессии BGP-соседство Leaf1-Spine1 не устанавливается (Active). Сессия со Spine2 остается Established.
 ```
-leaf1(config-router-bgp)# neighbor SPINE password DUMBASS
-leaf1(config-router-bgp)# end
+leaf1(config-router-bgp)#neighbor SPINE password DUMBASS
+leaf1(config-router-bgp)#end
 leaf1# clear ip bgp 10.2.1.0
 leaf1#show ip bgp summary
 BGP summary information for VRF default
@@ -346,7 +346,7 @@ Neighbor Status Codes: m - Under maintenance
 ```
 leaf1#configure terminal
 leaf1(config)#router bgp 65100
-leaf1(config-router-bgp)#   neighbor SPINE password DC_FABRIC
+leaf1(config-router-bgp)#neighbor SPINE password DC_FABRIC
 leaf1(config-router-bgp)#end
 leaf1#show ip bgp summary
 BGP summary information for VRF default
