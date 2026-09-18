@@ -379,10 +379,10 @@ Neighbor Status Codes: m - Under maintenance
   LEAF2                    10.0.102.0 4 65100             49        57    0    0 00:36:51 Estab   2      2
   LEAF3                    10.0.103.0 4 65100             56        55    0    0 00:36:49 Estab   3      3
 ```
-Видно три Established peer, Spine1 работает как RR для Leaf1-3
+Видно три Established peer, Spine1 работает как RR для Leaf1-3.
 
 ## Выводы:
 
-Реализован VLAN-Based Service VLAN 10/VNI 10010, объединивший 4 сервера в подсеть 10.10.10.0/24. 
-EVPN Type-3 используется для обнаружения участников VNI и формирования BUM flood-list. 
+Реализован VLAN-Based Service VLAN 10/VNI 10010, объединивший 4 сервера в подсеть 10.10.10.0/24 по VXLAN. 
+EVPN Type-3 используется для обнаружения участников VNI и формирования BUM флад-листа. 
 EVPN Type-2 используется для распространения информации о MAC-адресах между VTEP.
