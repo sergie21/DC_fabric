@@ -18,11 +18,11 @@
 | Server3 | Et1 `10.10.10.13`   | `/24`  |
 | Server4 | Et1 `10.10.10.14`   | `/24`  |
 
-## Конфигурация iBGP
+## Конфигурация Underlay/Overlay
 
 Был выбран OSPF для Underlay, iBGP для Overlay.
 Конфигурация Underlay OSPF была подгружена из ДЗ №2. Spines анонсируют в OSPF Loopback0, Leafs анонсируют в OSPF Loopback0 и Loopback1.
-Учтены рекомендации урока VxLAN EVPN для L2: Spines являются RR (не в кластере), next-hop-self не используется, retain route-target отсутствует (вся EVPN фабрика в AS 65100)
+Для оверлея учтены рекомендации урока VxLAN EVPN для L2: Spines являются RR (не в кластере), next-hop-self не используется, retain route-target отсутствует (вся EVPN фабрика в AS 65100).
 
 ### Spine1
 ```
