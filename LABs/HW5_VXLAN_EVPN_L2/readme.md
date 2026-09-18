@@ -1,5 +1,6 @@
 # Домашнее задание №5. Сервис L2 VNI в VxLAN 
 ## Топология сети
+Был выбран OSPF для Underlay, iBGP для Overlay
 
 ## Задание:
 1. Настроить BGP peering между Leaf и Spine в AF l2VPN EVPN;
