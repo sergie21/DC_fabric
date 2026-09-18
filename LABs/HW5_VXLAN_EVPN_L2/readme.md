@@ -1,5 +1,6 @@
 # Домашнее задание №5. Сервис L2 VNI в VxLAN 
 ## Топология сети
+<img width="757" height="785" alt="L2 EPVN" src="https://github.com/user-attachments/assets/80b489f7-1974-42f7-bc8a-eb706e350625" />
 
 ## Задание:
 1. Настроить BGP peering между Leaf и Spine в AF l2VPN EVPN;
