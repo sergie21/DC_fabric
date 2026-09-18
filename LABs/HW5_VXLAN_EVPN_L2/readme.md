@@ -381,3 +381,8 @@ Neighbor Status Codes: m - Under maintenance
 ```
 Видно три Established peer, Spine1 работает как RR для Leaf1-3
 
+## Выводы:
+
+Реализован VLAN-Based Service VLAN 10/VNI 10010, объединивший 4 сервера в подсеть 10.10.10.0/24. 
+EVPN Type-3 используется для обнаружения участников VNI и формирования BUM flood-list. 
+EVPN Type-2 используется для распространения информации о MAC-адресах между VTEP.
