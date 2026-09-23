@@ -1,6 +1,8 @@
 # Домашнее задание №6. Сервис L3 VNI в VxLAN 
 ## Топология сети
 
+Рисунок
+
 ## Задание:
 1. Настроить каждого клиента в своем VNI;
 2. Настроить маршрутизацию между клиентами;
@@ -11,10 +13,10 @@
 
 | Сервер  | Leaf / порт     | VLAN | IP-адрес       | Шлюз         |
 |---------|-----------------|------|----------------|--------------|
-| server1 | Leaf1 Ethernet3 | 10   | 10.10.10.11/24 | 10.10.10.254 |
-| server2 | Leaf2 Ethernet3 | 20   | 20.20.20.12/24 | 20.20.20.254 |
-| server3 | Leaf3 Ethernet3 | 10   | 10.10.10.13/24 | 10.10.10.254 |
-| server4 | Leaf3 Ethernet4 | 20   | 20.20.20.14/24 | 20.20.20.254 |
+| server1 | Leaf1 Et3       | 10   | 10.10.10.11/24 | 10.10.10.254 |
+| server2 | Leaf2 Et3       | 20   | 20.20.20.12/24 | 20.20.20.254 |
+| server3 | Leaf3 Et3       | 10   | 10.10.10.13/24 | 10.10.10.254 |
+| server4 | Leaf3 Et4       | 20   | 20.20.20.14/24 | 20.20.20.254 |
 
 ## Конфигурация Underlay/Overlay
 
@@ -65,13 +67,17 @@ router bgp 65100
       rd auto
       route-target both 10010:10010
       redistribute learned
-      address-family evpn
+   !
+   address-family evpn
       neighbor SPINE activate
+   !
    vrf TENANT_A
       rd 10.0.101.0:50001
       route-target import evpn 50001:50001
       route-target export evpn 50001:50001
       redistribute connected
+
+6.
 ```
 
 ### Leaf2
@@ -169,7 +175,7 @@ router bgp 65100
 На Spines ничего не меняется, Spines продолжают работать как транзитные устройства и RR.
 
 ### Серверы
-2 cервера остались в overlay-подсети 10.10.10.10/24, 2 cервера переведены в overlay-подсеть 20.20.20.20/24.
+2 cервера остались в overlay-подсети 10.10.10.0/24, 2 cервера переведены в overlay-подсеть 20.20.20.0/24.
 Изменения вносил в секции "exec" файла fabric.clab.yml:
 
 #### Server1
@@ -215,8 +221,31 @@ router bgp 65100
 
 ### Проверка Leaf1
 ```
+leaf1#show vxlan vni
+VNI to VLAN Mapping for Vxlan1
+VNI         VLAN       Source       Interface       802.1Q Tag
+----------- ---------- ------------ --------------- ----------
+10010       10         static       Ethernet3       untagged  
+                                    Vxlan1          10        
 
+VNI to dynamic VLAN Mapping for Vxlan1
+VNI         VLAN       VRF            Source       
+----------- ---------- -------------- ------------ 
+50001       4097       TENANT_A       evpn         
+
+leaf1#show ip route vrf TENANT_A
+
+VRF: TENANT_A
+
+Gateway of last resort is not set
+
+ C        10.10.10.0/24
+           directly connected, Vlan10
+ B I      20.20.20.0/24 [200/0]
+           via VTEP 10.1.102.0 VNI 50001 router-mac 00:1c:73:9c:96:6b local-interface Vxlan1
 ```
+Вижу соответствие VLAN10 и L2VNI10010; TENANT_A и L3VNI 50001.
+Вижу локальную сеть 10.10.10.0/24; удалённую сеть 20.20.20.0/24 через VXLAN.
 
 ### Проверка Leaf2
 ```
@@ -235,19 +264,6 @@ VNI         VLAN       VRF            Source
 leaf2#show ip route vrf TENANT_A
 
 VRF: TENANT_A
-Source Codes:
-       C - connected, S - static, K - kernel,
-       O - OSPF, IA - OSPF inter area, E1 - OSPF external type 1,
-       E2 - OSPF external type 2, N1 - OSPF NSSA external type 1,
-       N2 - OSPF NSSA external type2, B - Other BGP Routes,
-       B I - iBGP, B E - eBGP, R - RIP, I L1 - IS-IS level 1,
-       I L2 - IS-IS level 2, O3 - OSPFv3, A B - BGP Aggregate,
-       A O - OSPF Summary, NG - Nexthop Group Static Route,
-       V - VXLAN Control Service, M - Martian,
-       DH - DHCP client installed default route,
-       DP - Dynamic Policy Route, L - VRF Leaked,
-       G  - gRIBI, RC - Route Cache Route,
-       CL - CBF Leaked Route
 
 Gateway of last resort is not set
 
@@ -258,8 +274,7 @@ Gateway of last resort is not set
  B I      10.10.10.0/24 [200/0]
            via VTEP 10.1.101.0 VNI 50001 router-mac 00:1c:73:45:7a:6e local-interface Vxlan1
  B I      20.20.20.14/32 [200/0]
-           via VTEP 10.1.103.0 VNI 50001 router-mac 00:1c:73:44:a8:0a local-interfac
-e Vxlan1
+           via VTEP 10.1.103.0 VNI 50001 router-mac 00:1c:73:44:a8:0a local-interface Vxlan1
  C        20.20.20.0/24
            directly connected, Vlan20
 ```
@@ -285,19 +300,6 @@ VNI         VLAN       VRF            Source
 leaf3#show ip route vrf TENANT_A
 
 VRF: TENANT_A
-Source Codes:
-       C - connected, S - static, K - kernel,
-       O - OSPF, IA - OSPF inter area, E1 - OSPF external type 1,
-       E2 - OSPF external type 2, N1 - OSPF NSSA external type 1,
-       N2 - OSPF NSSA external type2, B - Other BGP Routes,
-       B I - iBGP, B E - eBGP, R - RIP, I L1 - IS-IS level 1,
-       I L2 - IS-IS level 2, O3 - OSPFv3, A B - BGP Aggregate,
-       A O - OSPF Summary, NG - Nexthop Group Static Route,
-       V - VXLAN Control Service, M - Martian,
-       DH - DHCP client installed default route,
-       DP - Dynamic Policy Route, L - VRF Leaked,
-       G  - gRIBI, RC - Route Cache Route,
-       CL - CBF Leaked Route
 
 Gateway of last resort is not set
 
@@ -351,6 +353,6 @@ round-trip min/avg/max = 7.251/9.222/13.037 ms
 
 ## Выводы:
 
-Реализованы VLAN 10/VNI 10010 и VLAN 20/VNI 10020 в VRF TENANT_A. 
+Реализованы VLAN 10/VNI 10010 и VLAN 20/VNI 10020 в VRF TENANT_A. Каждый клиентский сегмент размещён в отдельном L2VNI.
 Маршрутизация между подсетями выполняется через Distributed Anycast Gateway и L3VNI 50001. 
 EVPN Type-2/3 обеспечивает L2-связность, Type-5 обеспечивает распространение IP-префиксов между VTEP.
