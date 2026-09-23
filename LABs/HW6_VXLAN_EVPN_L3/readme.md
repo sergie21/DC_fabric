@@ -76,8 +76,6 @@ router bgp 65100
       route-target import evpn 50001:50001
       route-target export evpn 50001:50001
       redistribute connected
-
-6.
 ```
 
 ### Leaf2
@@ -174,7 +172,7 @@ router bgp 65100
 
 На Spines ничего не меняется, Spines продолжают работать как транзитные устройства и RR.
 
-### Серверы
+### Конфигурация серверов
 2 cервера остались в overlay-подсети 10.10.10.0/24, 2 cервера переведены в overlay-подсеть 20.20.20.0/24.
 Изменения вносил в секции "exec" файла fabric.clab.yml:
 
