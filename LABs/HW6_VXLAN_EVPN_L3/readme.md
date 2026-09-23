@@ -20,15 +20,15 @@
 
 1. Существующая фабрика не перестраивалась, остался OSPF для Underlay, iBGP для Overlay. Spines анонсируют в OSPF Loopback0, Leafs анонсируют в OSPF Loopback0 и Loopback1, Spines являются RR (не в кластере), вся EVPN фабрика в AS 65100.
 2. Поверх фабрики созданы:
-VRF - TENANT_A; 
-VLAN10 - 10.10.10.0/24;
-L2VNI VLAN10 - 10010;
-Anycast Gateway VLAN10 - 10.10.10.254;
-VLAN20 - 20.20.20.0/24;
-L2VNI VLAN20 - 10020;
-Anycast Gateway VLAN20 - 20.20.20.254;
-L3VNI TENANT_A - 50001;
-Anycast MAC - 0000.0000.9999;
+VRF - TENANT_A.
+VLAN10 - 10.10.10.0/24.
+L2VNI VLAN10 - 10010.
+Anycast Gateway VLAN10 - 10.10.10.254.
+VLAN20 - 20.20.20.0/24.
+L2VNI VLAN20 - 10020.
+Anycast Gateway VLAN20 - 20.20.20.254.
+L3VNI TENANT_A - 50001.
+Anycast MAC - 0000.0000.9999.
 Route Target L3VNI - 50001:50001.
 3. Одинаковый Anycast MAC и одинаковые IP-адреса шлюзов настроены на всех VTEP, обслуживающих соответствующий VLAN.
 
@@ -214,155 +214,144 @@ router bgp 65100
 
 ## Проверка
 
-### Проверка Server1
-Проверка проверка адресации и L2-связности на сервере №1
+### Проверка Leaf1
 ```
-/ # ip -o addr show dev eth1
-80: eth1    inet 10.10.10.11/24 scope global eth1\       valid_lft forever preferred_lft forever
-/ # ping -c 3 10.10.10.12
-PING 10.10.10.12 (10.10.10.12): 56 data bytes
-64 bytes from 10.10.10.12: seq=0 ttl=64 time=6.971 ms
-64 bytes from 10.10.10.12: seq=1 ttl=64 time=8.163 ms
-64 bytes from 10.10.10.12: seq=2 ttl=64 time=6.046 ms
---- 10.10.10.12 ping statistics ---
-3 packets transmitted, 3 packets received, 0% packet loss
-round-trip min/avg/max = 6.046/7.060/8.163 ms
 
-/ # ping -c 3 10.10.10.13
+```
+
+### Проверка Leaf2
+```
+leaf2#show vxlan vni
+VNI to VLAN Mapping for Vxlan1
+VNI         VLAN       Source       Interface       802.1Q Tag
+----------- ---------- ------------ --------------- ----------
+10020       20         static       Ethernet3       untagged  
+                                    Vxlan1          20        
+
+VNI to dynamic VLAN Mapping for Vxlan1
+VNI         VLAN       VRF            Source       
+----------- ---------- -------------- ------------ 
+50001       4097       TENANT_A       evpn         
+
+leaf2#show ip route vrf TENANT_A
+
+VRF: TENANT_A
+Source Codes:
+       C - connected, S - static, K - kernel,
+       O - OSPF, IA - OSPF inter area, E1 - OSPF external type 1,
+       E2 - OSPF external type 2, N1 - OSPF NSSA external type 1,
+       N2 - OSPF NSSA external type2, B - Other BGP Routes,
+       B I - iBGP, B E - eBGP, R - RIP, I L1 - IS-IS level 1,
+       I L2 - IS-IS level 2, O3 - OSPFv3, A B - BGP Aggregate,
+       A O - OSPF Summary, NG - Nexthop Group Static Route,
+       V - VXLAN Control Service, M - Martian,
+       DH - DHCP client installed default route,
+       DP - Dynamic Policy Route, L - VRF Leaked,
+       G  - gRIBI, RC - Route Cache Route,
+       CL - CBF Leaked Route
+
+Gateway of last resort is not set
+
+ B I      10.10.10.11/32 [200/0]
+           via VTEP 10.1.101.0 VNI 50001 router-mac 00:1c:73:45:7a:6e local-interface Vxlan1
+ B I      10.10.10.13/32 [200/0]
+           via VTEP 10.1.103.0 VNI 50001 router-mac 00:1c:73:44:a8:0a local-interface Vxlan1
+ B I      10.10.10.0/24 [200/0]
+           via VTEP 10.1.101.0 VNI 50001 router-mac 00:1c:73:45:7a:6e local-interface Vxlan1
+ B I      20.20.20.14/32 [200/0]
+           via VTEP 10.1.103.0 VNI 50001 router-mac 00:1c:73:44:a8:0a local-interfac
+e Vxlan1
+ C        20.20.20.0/24
+           directly connected, Vlan20
+```
+Вижу соответствие VLAN20 и L2VNI10020; TENANT_A и L3VNI50001.
+Вижу локальную сеть 20.20.20.0/24; удалённую сеть 10.10.10.0/24 через VXLAN.
+
+### Проверка Leaf3
+```
+leaf3#show vxlan vni
+VNI to VLAN Mapping for Vxlan1
+VNI         VLAN       Source       Interface       802.1Q Tag
+----------- ---------- ------------ --------------- ----------
+10010       10         static       Ethernet3       untagged  
+                                    Vxlan1          10        
+10020       20         static       Ethernet4       untagged  
+                                    Vxlan1          20        
+
+VNI to dynamic VLAN Mapping for Vxlan1
+VNI         VLAN       VRF            Source       
+----------- ---------- -------------- ------------ 
+50001       4097       TENANT_A       evpn         
+
+leaf3#show ip route vrf TENANT_A
+
+VRF: TENANT_A
+Source Codes:
+       C - connected, S - static, K - kernel,
+       O - OSPF, IA - OSPF inter area, E1 - OSPF external type 1,
+       E2 - OSPF external type 2, N1 - OSPF NSSA external type 1,
+       N2 - OSPF NSSA external type2, B - Other BGP Routes,
+       B I - iBGP, B E - eBGP, R - RIP, I L1 - IS-IS level 1,
+       I L2 - IS-IS level 2, O3 - OSPFv3, A B - BGP Aggregate,
+       A O - OSPF Summary, NG - Nexthop Group Static Route,
+       V - VXLAN Control Service, M - Martian,
+       DH - DHCP client installed default route,
+       DP - Dynamic Policy Route, L - VRF Leaked,
+       G  - gRIBI, RC - Route Cache Route,
+       CL - CBF Leaked Route
+
+Gateway of last resort is not set
+
+ B I      10.10.10.11/32 [200/0]
+           via VTEP 10.1.101.0 VNI 50001 router-mac 00:1c:73:45:7a:6e local-interface Vxlan1
+ C        10.10.10.0/24
+           directly connected, Vlan10
+ B I      20.20.20.12/32 [200/0]
+           via VTEP 10.1.102.0 VNI 50001 router-mac 00:1c:73:9c:96:6b local-interface Vxlan1
+ C        20.20.20.0/24
+           directly connected, Vlan20
+```
+Вижу соответствие VLAN10 и L2VNI10010; соответствие VLAN20 и L2VNI10020; соответствие TENANT_A и L3VNI50001.
+Вижу обе подключённые сети: 10.10.10.0/24 и 20.20.20.0/24.
+
+### Проверка серверов
+Проверяем передачу L2-трафика через VXLAN без маршрутизации. Server1 и server3 находятся в одном VLAN10, но подключены к разным Leaf. Все ОК:
+```
+docker exec clab-fabric-server1 ping -c 3 10.10.10.13
 PING 10.10.10.13 (10.10.10.13): 56 data bytes
-64 bytes from 10.10.10.13: seq=0 ttl=64 time=5.656 ms
-64 bytes from 10.10.10.13: seq=1 ttl=64 time=6.146 ms
-64 bytes from 10.10.10.13: seq=2 ttl=64 time=5.640 ms
+64 bytes from 10.10.10.13: seq=0 ttl=64 time=11.275 ms
+64 bytes from 10.10.10.13: seq=1 ttl=64 time=7.302 ms
+64 bytes from 10.10.10.13: seq=2 ttl=64 time=8.742 ms
+
 --- 10.10.10.13 ping statistics ---
 3 packets transmitted, 3 packets received, 0% packet loss
-round-trip min/avg/max = 5.640/5.814/6.146 ms
-
+round-trip min/avg/max = 7.302/9.106/11.275 ms
 ```
-Видно, что Server1 (10.10.10.11/24) ходит в одной подсети без L3-шлюза на Server2 (10.10.10.12/24 через Leaf2 и на Server3 (10.10.10.13/24) через Leaf3.
-
-### Проверка Leaf1
-Проверка UNDERLAY:
+Проверяем локальную inter-VLAN маршрутизацию на одном VTEP. Server3 находится в VLAN10, server4 - в VLAN20. Оба подключены к Leaf3. Все ОК:
 ```
-leaf1#show ip ospf neighbor
-Neighbor ID     Instance VRF      Pri State                  Dead Time   Address         Interface
-10.0.2.0        1        default  0   FULL                   00:00:02    10.2.2.0        Ethernet2
-10.0.1.0        1        default  0   FULL                   00:00:01    10.2.1.0        Ethernet1
+docker exec clab-fabric-server3 ping -c 3 20.20.20.14
+PING 20.20.20.14 (20.20.20.14): 56 data bytes
+64 bytes from 20.20.20.14: seq=0 ttl=63 time=10.830 ms
+64 bytes from 20.20.20.14: seq=1 ttl=63 time=3.492 ms
+64 bytes from 20.20.20.14: seq=2 ttl=63 time=3.192 ms
+3 packets transmitted, 3 packets received, 0% packet loss
+round-trip min/avg/max = 3.192/5.838/10.830 ms
 ```
-Два соседа - Spine1 и Spine2 - в FULL.
-
-Проверка OVERLAY:
+Проверяем маршрутизацию между VLAN10 и VLAN20 через разные VTEP. Server1 подключён к Leaf1, server2 - к Leaf2. Все ОК:
 ```
-leaf1#show vxlan flood vtep
-          VXLAN Flood VTEP Table
---------------------------------------------------------------------------------
+ docker exec clab-fabric-server1 ping -c 3 20.20.20.12
+PING 20.20.20.12 (20.20.20.12): 56 data bytes
+64 bytes from 20.20.20.12: seq=0 ttl=62 time=13.037 ms
+64 bytes from 20.20.20.12: seq=1 ttl=62 time=7.251 ms
+64 bytes from 20.20.20.12: seq=2 ttl=62 time=7.379 ms
 
-VLANS                            Ip Address
------------------------------   ------------------------------------------------
-10                              10.1.102.0      10.1.103.0     
-
+--- 20.20.20.12 ping statistics ---
+3 packets transmitted, 3 packets received, 0% packet loss
+round-trip min/avg/max = 7.251/9.222/13.037 ms
 ```
-Leaf1 видит два удалённых VTEPs в VLAN 10/VNI 10010.
-
-Проверка L2-доступности:
-```
-leaf1#show vxlan address-table
-          Vxlan Mac Address Table
-----------------------------------------------------------------------
-
-VLAN  Mac Address     Type      Prt  VTEP             Moves   Last Move
-----  -----------     ----      ---  ----             -----   ---------
-  10  aac1.ab4b.fc0d  EVPN      Vx1  10.1.102.0       1       0:08:31 ago
-  10  aac1.ab5e.6eba  EVPN      Vx1  10.1.103.0       1       0:08:29 ago
-  10  aac1.ab98.a6dd  EVPN      Vx1  10.1.103.0       1       0:01:07 ago
-Total Remote Mac Addresses for this criterion: 3
-```
-Leaf1 знает, за каким удалённым VTEP находится каждый MAC.
-
-Проверка Type-3 IMET – участие Leaf1(VTEP) в L2VNI:
-```
-leaf1#show bgp evpn route-type imet
-BGP routing table information for VRF default
-Router identifier 10.0.101.0, local AS number 65100
-Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
-                    c - Contributing to ECMP, % - Pending best path selection
-Origin codes: i - IGP, e - EGP, ? - incomplete
-AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
-
-          Network                Next Hop              Metric  LocPref Weight  Path
- * >      RD: 10.0.101.0:10 imet 10.1.101.0
-                                 -                     -       -       0       i
- * >Ec    RD: 10.0.102.0:10 imet 10.1.102.0
-                                 10.1.102.0            -       100     0       i Or-ID: 10.0.102.0 C-LST: 10.0.1.0 
- *  ec    RD: 10.0.102.0:10 imet 10.1.102.0
-                                 10.1.102.0            -       100     0       i Or-ID: 10.0.102.0 C-LST: 10.0.2.0 
- * >Ec    RD: 10.0.103.0:10 imet 10.1.103.0
-                                 10.1.103.0            -       100     0       i Or-ID: 10.0.103.0 C-LST: 10.0.2.0 
- *  ec    RD: 10.0.103.0:10 imet 10.1.103.0
-                                 10.1.103.0            -       100     0       i Or-ID: 10.0.103.0 C-LST: 10.0.1.0 
-leaf1#show vxlan flood vtep
-          VXLAN Flood VTEP Table
---------------------------------------------------------------------------------
-
-VLANS                            Ip Address
------------------------------   ------------------------------------------------
-10                              10.1.102.0      10.1.103.0     
-```
-
-Проверка Type-2 – распространение MAC-адресов от/к Leaf1
-```
-leaf1#show bgp evpn route-type mac-ip
-BGP routing table information for VRF default
-Router identifier 10.0.101.0, local AS number 65100
-Route status codes: * - valid, > - active, S - Stale, E - ECMP head, e - ECMP
-                    c - Contributing to ECMP, % - Pending best path selection
-Origin codes: i - IGP, e - EGP, ? - incomplete
-AS Path Attributes: Or-ID - Originator ID, C-LST - Cluster List, LL Nexthop - Link Local Nexthop
-
-          Network                Next Hop              Metric  LocPref Weight  Path
- * >Ec    RD: 10.0.102.0:10 mac-ip aac1.ab4b.fc0d
-                                 10.1.102.0            -       100     0       i Or-ID: 10.0.102.0 C-LST: 10.0.2.0 
- *  ec    RD: 10.0.102.0:10 mac-ip aac1.ab4b.fc0d
-                                 10.1.102.0            -       100     0       i Or-ID: 10.0.102.0 C-LST: 10.0.1.0 
- * >      RD: 10.0.101.0:10 mac-ip aac1.ab59.005c
-                                 -                     -       -       0       i
- * >Ec    RD: 10.0.103.0:10 mac-ip aac1.ab5e.6eba
-                                 10.1.103.0            -       100     0       i Or-ID: 10.0.103.0 C-LST: 10.0.1.0 
- *  ec    RD: 10.0.103.0:10 mac-ip aac1.ab5e.6eba
-                                 10.1.103.0            -       100     0       i Or-ID: 10.0.103.0 C-LST: 10.0.2.0 
- * >Ec    RD: 10.0.103.0:10 mac-ip aac1.ab98.a6dd
-                                 10.1.103.0            -       100     0       i Or-ID: 10.0.103.0 C-LST: 10.0.1.0 
- *  ec    RD: 10.0.103.0:10 mac-ip aac1.ab98.a6dd
-                                 10.1.103.0            -       100     0       i Or-ID: 10.0.103.0 C-LST: 10.0.2.0 
-
-leaf1#show vxlan address-table
-          Vxlan Mac Address Table
-----------------------------------------------------------------------
-
-VLAN  Mac Address     Type      Prt  VTEP             Moves   Last Move
-----  -----------     ----      ---  ----             -----   ---------
-  10  aac1.ab4b.fc0d  EVPN      Vx1  10.1.102.0       1       0:14:09 ago
-  10  aac1.ab5e.6eba  EVPN      Vx1  10.1.103.0       1       0:14:07 ago
-  10  aac1.ab98.a6dd  EVPN      Vx1  10.1.103.0       1       0:06:45 ago
-Total Remote Mac Addresses for this criterion: 3
-```
-
-### Проверка Spine1
-
-```
-spine1#show bgp evpn summary
-BGP summary information for VRF default
-Router identifier 10.0.1.0, local AS number 65100
-Neighbor Status Codes: m - Under maintenance
-  Description              Neighbor   V AS           MsgRcvd   MsgSent  InQ OutQ  Up/Down State   PfxRcd PfxAcc
-  LEAF1                    10.0.101.0 4 65100             51        59    0    0 00:36:50 Estab   2      2
-  LEAF2                    10.0.102.0 4 65100             49        57    0    0 00:36:51 Estab   2      2
-  LEAF3                    10.0.103.0 4 65100             56        55    0    0 00:36:49 Estab   3      3
-```
-Видно три Established peer, Spine1 работает как RR для Leaf1-3.
 
 ## Выводы:
 
-Реализован VLAN-Based Service VLAN 10/VNI 10010, объединивший 4 сервера в подсеть 10.10.10.0/24 по VXLAN. 
-EVPN Type-3 используется для обнаружения участников VNI и формирования BUM флад-листа. 
-EVPN Type-2 используется для распространения информации о MAC-адресах между VTEP.
-
+Реализованы VLAN 10/VNI 10010 и VLAN 20/VNI 10020 в VRF TENANT_A. 
+Маршрутизация между подсетями выполняется через Distributed Anycast Gateway и L3VNI 50001. 
+EVPN Type-2/3 обеспечивает L2-связность, Type-5 обеспечивает распространение IP-префиксов между VTEP.
