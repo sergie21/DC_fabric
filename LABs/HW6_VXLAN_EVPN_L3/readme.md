@@ -1,7 +1,6 @@
 # Домашнее задание №6. Сервис L3 VNI в VxLAN 
 ## Топология сети
-
-Рисунок
+<img width="862" height="887" alt="VXLAN L3EVPN" src="https://github.com/user-attachments/assets/be6c2e7b-fa08-467b-b3b4-80348682faa0" />
 
 ## Задание:
 1. Настроить каждого клиента в своем VNI;
@@ -21,7 +20,7 @@
 ## Конфигурация Underlay/Overlay
 
 1. Существующая фабрика не перестраивалась, остался OSPF для Underlay, iBGP для Overlay. Spines анонсируют в OSPF Loopback0, Leafs анонсируют в OSPF Loopback0 и Loopback1, Spines являются RR (не в кластере), вся EVPN фабрика в AS 65100.
-2. Поверх фабрики созданы:
+2. Поверх фабрики созданы:  
 VRF - TENANT_A.  
 VLAN10 - 10.10.10.0/24.  
 L2VNI VLAN10 - 10010.  
@@ -79,7 +78,7 @@ router bgp 65100
 ```
 
 ### Leaf2
-Старый VLAN10 и соответствующая привязка L2VNI на Leaf2 удалены, тк клиентов VLAN10 здесь больше нет. Создан VLAN20.
+Старый VLAN10 и привязка L2VNI на Leaf2 удалены, тк клиентов VLAN10 здесь больше нет. Создан VLAN20.
 Leaf2 анонсирует сеть 20.20.20.0/24 в EVPN как Type-5 маршрут и импортирует сеть 10.10.10.0/24, полученную от Leaf1 и Leaf3.
 
 ```
@@ -122,8 +121,8 @@ router bgp 65100
 ```
 
 ### Leaf3
-Leaf3 одновременно обслуживает 2 сети: server3 подключён к VLAN10, server4 подключён к VLAN20. На Leaf3 присутствуют оба L2VNI и общий L3VNI 50001 для передачи трафика на удаленный Leaf. Leaf3 может маршрутизировать трафик между VLAN10 и VLAN20 локально. 
-VLAN10/L2VNI10010 уже был на Leaf3, добавляем VLAN20, шлюзы и L3VNI.
+Leaf3 обслуживает 2 сети: server3 подключён к VLAN10, server4 подключён к VLAN20. На Leaf3 присутствуют оба L2VNI и общий L3VNI 50001 для маршрутизации трафика. Leaf3 может маршрутизировать трафик между VLAN10 и VLAN20 локально. 
+VLAN10 уже был на Leaf3, добавляем VLAN20, шлюзы и L3VNI.
 
 ```
 vlan 20
@@ -243,7 +242,7 @@ Gateway of last resort is not set
            via VTEP 10.1.102.0 VNI 50001 router-mac 00:1c:73:9c:96:6b local-interface Vxlan1
 ```
 Вижу соответствие VLAN10 и L2VNI10010; TENANT_A и L3VNI 50001.
-Вижу локальную сеть 10.10.10.0/24; удалённую сеть 20.20.20.0/24 через VXLAN.
+Вижу локальную сеть 10.10.10.0/24; вижу удалённую сеть 20.20.20.0/24 через VXLAN.
 
 ### Проверка Leaf2
 ```
@@ -277,7 +276,7 @@ Gateway of last resort is not set
            directly connected, Vlan20
 ```
 Вижу соответствие VLAN20 и L2VNI10020; TENANT_A и L3VNI50001.
-Вижу локальную сеть 20.20.20.0/24; удалённую сеть 10.10.10.0/24 через VXLAN.
+Вижу локальную сеть 20.20.20.0/24; вижу удалённую сеть 10.10.10.0/24 через VXLAN.
 
 ### Проверка Leaf3
 ```
@@ -314,7 +313,7 @@ Gateway of last resort is not set
 Вижу обе подключённые сети: 10.10.10.0/24 и 20.20.20.0/24.
 
 ### Проверка серверов
-Проверяем передачу L2-трафика через VXLAN без маршрутизации. Server1 и server3 находятся в одном VLAN10, но подключены к разным Leaf. Все ОК:
+Проверяю передачу L2-трафика через VXLAN без маршрутизации. Server1 и server3 находятся в одном VLAN10, но подключены к разным Leaf. Все ОК:
 ```
 docker exec clab-fabric-server1 ping -c 3 10.10.10.13
 PING 10.10.10.13 (10.10.10.13): 56 data bytes
@@ -326,7 +325,7 @@ PING 10.10.10.13 (10.10.10.13): 56 data bytes
 3 packets transmitted, 3 packets received, 0% packet loss
 round-trip min/avg/max = 7.302/9.106/11.275 ms
 ```
-Проверяем локальную inter-VLAN маршрутизацию на одном VTEP. Server3 находится в VLAN10, server4 - в VLAN20. Оба подключены к Leaf3. Все ОК:
+Проверяю локальную inter-VLAN маршрутизацию на одном VTEP. Server3 находится в VLAN10, server4 - в VLAN20. Оба подключены к Leaf3. Все ОК:
 ```
 docker exec clab-fabric-server3 ping -c 3 20.20.20.14
 PING 20.20.20.14 (20.20.20.14): 56 data bytes
@@ -336,7 +335,7 @@ PING 20.20.20.14 (20.20.20.14): 56 data bytes
 3 packets transmitted, 3 packets received, 0% packet loss
 round-trip min/avg/max = 3.192/5.838/10.830 ms
 ```
-Проверяем маршрутизацию между VLAN10 и VLAN20 через разные VTEP. Server1 подключён к Leaf1, server2 - к Leaf2. Все ОК:
+Проверяю маршрутизацию между VLAN10 и VLAN20 через разные VTEP. Server1 подключён к Leaf1, server2 - к Leaf2. Все ОК:
 ```
  docker exec clab-fabric-server1 ping -c 3 20.20.20.12
 PING 20.20.20.12 (20.20.20.12): 56 data bytes
@@ -350,7 +349,6 @@ round-trip min/avg/max = 7.251/9.222/13.037 ms
 ```
 
 ## Выводы:
-
 Реализованы VLAN 10/VNI 10010 и VLAN 20/VNI 10020 в VRF TENANT_A. Каждый клиентский сегмент размещён в отдельном L2VNI.
 Маршрутизация между подсетями выполняется через Distributed Anycast Gateway и L3VNI 50001. 
 EVPN Type-2/3 обеспечивает L2-связность, Type-5 обеспечивает распространение IP-префиксов между VTEP.
