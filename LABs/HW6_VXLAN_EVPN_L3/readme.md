@@ -1,6 +1,6 @@
 # Домашнее задание №6. Сервис L3 VNI в VxLAN 
 ## Топология сети
-<img width="431" height="444" alt="VXLAN L3EVPN" src="https://github.com/user-attachments/assets/be6c2e7b-fa08-467b-b3b4-80348682faa0" />
+<img width="647" height="667" alt="VXLAN L3EVPN" src="https://github.com/user-attachments/assets/be6c2e7b-fa08-467b-b3b4-80348682faa0" />
 
 ## Задание:
 1. Настроить каждого клиента в своем VNI;
