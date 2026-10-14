@@ -1,111 +1,66 @@
-# HW7 — EVPN Multihoming (ESI-LAG) на Arista cEOS
+# Домашнее задание №7. EVPN Multihoming (ESI-LAG)
 
-## Цель работы
+## Топология сети
 
-Подключить Linux-клиент двумя физическими линками к разным Leaf-коммутаторам, организовать LACP 802.3ad на клиенте и Ethernet Segment с режимом **all-active** в VXLAN EVPN Fabric. Проверить связность при работе обоих линков и при отключении каждого из них по отдельности.
+Существующая фабрика: 2 Spine, 3 Leaf, 4 Linux-сервера. Arista cEOS 4.33.2F, Containerlab в Ubuntu/WSL2.
 
-## Лабораторная среда
-
-| Компонент | Реализация |
-|---|---|
-| Хост | Windows / WSL2 / Ubuntu |
-| Оркестрация | Containerlab 0.79.0 |
-| Сетевые узлы | Arista cEOS 4.33.2F: 2 Spine, 3 Leaf |
-| Клиенты | 4 Linux-контейнера `alpine:latest` |
-| Underlay | OSPF, point-to-point-соединения |
-| Overlay | MP-BGP EVPN, ASN 65100, RR на Spine |
-| Data Plane | VXLAN, L2VNI и L3VNI |
-
-> **Примечание.** Управляющая Docker-сеть `172.20.20.0/24` не используется для оценки передачи пользовательского трафика через EVPN. Тесты выполнялись с `server1` через `bond0`.
-
-## Топология
+Для этой работы server1 подключён двумя линками к Leaf1 и Leaf2. Остальные подключения оставлены без изменений.
 
 ```mermaid
 flowchart TB
-    SP1[spine1 — BGP RR]
-    SP2[spine2 — BGP RR]
-    L1[leaf1 — VTEP]
-    L2[leaf2 — VTEP]
-    L3[leaf3 — VTEP]
-    S1[server1 — bond0 / LACP]
-    S2[server2 — VLAN20]
-    S3[server3 — VLAN10]
-    S4[server4 — VLAN20]
-    SP1 --- L1
-    SP1 --- L2
-    SP1 --- L3
-    SP2 --- L1
-    SP2 --- L2
-    SP2 --- L3
-    L1 -- "Ethernet3 ↔ eth1" --- S1
-    L2 -- "Ethernet4 ↔ eth2" --- S1
-    L2 --- S2
-    L3 --- S3
-    L3 --- S4
+    spine1 --- leaf1
+    spine1 --- leaf2
+    spine1 --- leaf3
+    spine2 --- leaf1
+    spine2 --- leaf2
+    spine2 --- leaf3
+    leaf1 -- "Et3 — eth1" --- server1
+    leaf2 -- "Et4 — eth2" --- server1
+    leaf2 --- server2
+    leaf3 --- server3
+    leaf3 --- server4
 ```
 
-`server1` dual-homed к Leaf1 и Leaf2. Оба соединения входят в один логический агрегатор Linux `bond0`.
+## Задание:
 
-## Адресный план и логические сегменты
+1. Подключить клиента двумя линками к разным Leaf.
+2. Настроить агрегированный канал на клиенте.
+3. Настроить ESI-LAG для VXLAN EVPN.
+4. Проверить связность, в том числе при отключении одного линка.
+5. Зафиксировать адресацию и конфигурации.
 
-| Узел / интерфейс | Адрес / назначение |
-|---|---|
-| Leaf1 Loopback0 / Loopback1 | `10.0.101.0/32` / `10.1.101.0/32` |
-| Leaf2 Loopback0 / Loopback1 | `10.0.102.0/32` / `10.1.102.0/32` |
-| Leaf3 Loopback0 / Loopback1 | `10.0.103.0/32` / `10.1.103.0/32` |
-| server1 `bond0` | `10.10.10.11/24`, VLAN10 |
-| server2 `eth1` | `20.20.20.12/24`, VLAN20 |
-| server3 `eth1` | `10.10.10.13/24`, VLAN10 |
-| server4 `eth1` | `20.20.20.14/24`, VLAN20 |
-| Anycast Gateway VLAN10 | `10.10.10.254/24` (Leaf1, Leaf2) |
-| Anycast Gateway VLAN20 | `20.20.20.254/24` (существующая фабрика) |
-| VLAN10 / L2VNI | `10 / 10010` |
-| VLAN20 / L2VNI | `20 / 10020` |
-| VRF / L3VNI | `TENANT_A / 50001` |
+## IP-адресация:
 
-### Параметры Ethernet Segment
+| Сервер | Leaf / порт | VLAN | IP-адрес | Шлюз |
+| --- | --- | --- | --- | --- |
+| server1 | Leaf1 Et3 + Leaf2 Et4 | 10 | 10.10.10.11/24 (bond0) | 10.10.10.254 |
+| server2 | Leaf2 Et3 | 20 | 20.20.20.12/24 | 20.20.20.254 |
+| server3 | Leaf3 Et3 | 10 | 10.10.10.13/24 | 10.10.10.254 |
+| server4 | Leaf3 Et4 | 20 | 20.20.20.14/24 | 20.20.20.254 |
 
-| Параметр | Значение |
-|---|---|
-| Ethernet Segment Identifier | `0000:0000:0000:0000:0010` |
-| Интерфейс | `Port-Channel10` на Leaf1 и Leaf2 |
-| LACP System ID | `1111.2222.0010` |
-| Redundancy | `all-active` |
-| Клиентский агрегатор | `bond0`, IEEE 802.3ad, LACP fast |
-| Access VLAN | VLAN10 |
+VLAN10 — VNI10010; VLAN20 — VNI10020; VRF TENANT_A — L3VNI50001. Anycast MAC — 0000.0000.9999.
 
-## План выполнения
+## Конфигурация Underlay/Overlay
 
-1. Расширить топологию двумя подключениями `server1` к Leaf1 и Leaf2.
-2. Настроить LACP `Port-Channel10` на обоих Leaf.
-3. Настроить общий ESI и LACP System ID на обоих Leaf.
-4. Настроить L2VNI10010 и BGP EVPN VLAN10 на Leaf2, обеспечить локальный Anycast Gateway VLAN10 на обоих Leaf.
-5. Настроить Linux bonding `802.3ad` на `server1` и маршрут к VLAN20 через фабрику.
-6. Проверить OSPF, MP-BGP EVPN, LACP, L2/L3-связность.
-7. Проверить работу после отключения каждого клиентского линка.
-8. Сохранить мастер-конфигурации и проверить автоматическое развёртывание.
+1. Существующую фабрику не перестраивал. Underlay — OSPF, Overlay — iBGP EVPN, оба Spine — RR, AS 65100.
+2. В Containerlab добавил второй линк server1 к Leaf2. На сервере eth1 и eth2 объединяются в bond0 по LACP 802.3ad.
+3. На Leaf1 и Leaf2 настроил Port-Channel10, одинаковый ESI и LACP System ID. Режим Multihoming — all-active.
+4. На Leaf2 добавил VLAN10/VNI10010, BGP EVPN для VLAN10 и Anycast Gateway 10.10.10.254. Ранее Leaf2 обслуживал только VLAN20.
 
-## Основные настройки
-
-### Containerlab: соединения
+### Подключение server1
 
 Фрагмент `fabric.clab.yml`:
 
 ```yaml
-links:
-  # ... соединения Spine–Leaf ...
-  - endpoints: ["leaf1:eth3", "server1:eth1"]
-  - endpoints: ["leaf2:eth4", "server1:eth2"]
-  - endpoints: ["leaf2:eth3", "server2:eth1"]
-  - endpoints: ["leaf3:eth3", "server3:eth1"]
-  - endpoints: ["leaf3:eth4", "server4:eth1"]
+    - endpoints: ["leaf1:eth3", "server1:eth1"]
+    - endpoints: ["leaf2:eth4", "server1:eth2"]
 ```
 
-### Leaf1: ESI-LAG
+### Leaf1
 
-Проверенный фрагмент текущей конфигурации:
+Ethernet3 переведён в Port-Channel10. В Ethernet Segment задан ESI; LACP System ID на обоих Leaf одинаковый.
 
-```eos
+```text
 interface Ethernet3
    description SERVER1_ESI_LAG
    channel-group 10 mode active
@@ -124,9 +79,11 @@ interface Vlan10
    ip address virtual 10.10.10.254/24
 ```
 
-### Leaf2: ESI-LAG и VLAN10
+### Leaf2
 
-```eos
+На Leaf2 Ethernet4 включён в Port-Channel10 с тем же ESI и LACP System ID. Добавлены недостающие настройки VLAN10 для Overlay.
+
+```text
 interface Ethernet4
    description SERVER1_ESI_LAG
    channel-group 10 mode active
@@ -139,17 +96,17 @@ interface Port-Channel10
       identifier 0000:0000:0000:0000:0010
    lacp system-id 1111.2222.0010
 !
+interface Vlan10
+   description GATEWAY_VLAN10
+   vrf TENANT_A
+   ip address virtual 10.10.10.254/24
+!
 interface Vxlan1
    vxlan source-interface Loopback1
    vxlan udp-port 4789
    vxlan vlan 10 vni 10010
    vxlan vlan 20 vni 10020
    vxlan vrf TENANT_A vni 50001
-!
-interface Vlan10
-   description GATEWAY_VLAN10
-   vrf TENANT_A
-   ip address virtual 10.10.10.254/24
 !
 router bgp 65100
    vlan 10
@@ -158,139 +115,144 @@ router bgp 65100
       redistribute learned
 ```
 
-> Это **ключевые фрагменты**, а не полные конфигурации. Полные конфиги следует брать из `configs/leaf1.cfg`, `configs/leaf2.cfg` и остальных `configs/*.cfg`. Режим `redundancy all-active` подтверждён командой `show running-config all interfaces Port-Channel10`; EOS не обязательно отображает параметры по умолчанию в обычном `show running-config`.
+По `show running-config all interfaces Port-Channel10` вижу `redundancy all-active`; в обычном running-config команда не выводится, т.к. используется значение по умолчанию.
 
-### Linux `server1`: автоматическая настройка bonding
+На Spine ничего не менял.
 
-Фрагмент секции узла `server1` в `fabric.clab.yml`:
+### Server1
+
+В Alpine изначально использовался BusyBox `ip`. После deploy bond0 создавался в `balance-rr`, Leaf ожидали LACP. Установил `iproute2` и вынес установку режима 802.3ad в отдельную команду. Текущая секция `exec` в `fabric.clab.yml`:
 
 ```yaml
-server1:
-  kind: linux
-  image: alpine:latest
-  mgmt-ipv4: 172.20.20.7
-  exec:
-    - apk add --no-cache iproute2
-    - ip link add bond0 type bond
-    - ip link set bond0 type bond mode 802.3ad miimon 100 lacp_rate fast
-    - ip link set eth1 down
-    - ip link set eth2 down
-    - ip link set eth1 master bond0
-    - ip link set eth2 master bond0
-    - ip link set eth1 up
-    - ip link set eth2 up
-    - ip link set bond0 up
-    - ip addr add 10.10.10.11/24 dev bond0
-    - ip route replace 20.20.20.0/24 via 10.10.10.254 dev bond0
+    server1:
+      kind: linux
+      image: alpine:latest
+      mgmt-ipv4: 172.20.20.7
+      exec:
+        - apk add --no-cache iproute2
+        - ip link add bond0 type bond
+        - ip link set bond0 type bond mode 802.3ad miimon 100 lacp_rate fast
+        - ip link set eth1 down
+        - ip link set eth2 down
+        - ip link set eth1 master bond0
+        - ip link set eth2 master bond0
+        - ip link set eth1 up
+        - ip link set eth2 up
+        - ip link set bond0 up
+        - ip addr add 10.10.10.11/24 dev bond0
+        - ip route replace 20.20.20.0/24 via 10.10.10.254 dev bond0
 ```
 
-При штатном развёртывании был автоматически создан `bond0` в режиме IEEE 802.3ad, с двумя активными участниками и правильным маршрутом до VLAN20.
+Маршрут в VLAN20 добавил явно, чтобы тесты не уходили через management `eth0` и Docker default gateway.
 
-## Верификация
+## Проверка
 
-### Underlay и Overlay
+### Underlay/Overlay
 
-На Leaf1 после штатного `deploy`:
+После штатного `./start-fabric.sh` на Leaf1 два OSPF-соседа в FULL, BGP EVPN до Spine1 и Spine2 в Established.
 
-- OSPF: два соседа Spine в состоянии `FULL`.
-- BGP EVPN: обе сессии Spine в состоянии `Established`.
-- На Leaf2 после добавления VLAN10/VNI10010 наблюдались EVPN Auto-Discovery (Type 1), MAC/IP Advertisement (Type 2), IMET (Type 3), IP Prefix (Type 5).
+```text
+leaf1#show ip ospf neighbor
+10.0.2.0   FULL   Ethernet2
+10.0.1.0   FULL   Ethernet1
 
-Команды проверки:
-
-```eos
-show ip ospf neighbor
-show bgp evpn summary
-show bgp evpn
-show vxlan vni
-show port-channel
-show lacp peer
+leaf1#show bgp evpn summary
+SPINE1  10.0.1.0  Estab
+SPINE2  10.0.2.0  Estab
 ```
 
-### LACP на клиенте
+На Leaf2 после добавления VLAN10 вижу EVPN Auto-Discovery для общего ESI с Leaf1, локальный MAC server1 (Type 2), IMET (Type 3) и маршруты префиксов (Type 5).
+
+### LACP
+
+Проверяю агрегатор после полного пересоздания фабрики, без ручной настройки server1:
 
 ```bash
-cat /proc/net/bonding/bond0
-ip route get 20.20.20.12
+docker exec clab-fabric-server1 cat /proc/net/bonding/bond0
 ```
-
-Получено после повторного развёртывания:
 
 ```text
 Bonding Mode: IEEE 802.3ad Dynamic link aggregation
 MII Status: up
 LACP active: on
 LACP rate: fast
-Active Aggregator Info:
-    Aggregator ID: 2
-    Number of ports: 2
-    Partner Key: 10
-    Partner Mac Address: 11:11:22:22:00:10
 
-eth1: Aggregator ID 2, MII Status up
-eth2: Aggregator ID 2, MII Status up
+Active Aggregator Info:
+        Aggregator ID: 2
+        Number of ports: 2
+        Partner Key: 10
+        Partner Mac Address: 11:11:22:22:00:10
+
+Slave Interface: eth1
+MII Status: up
+Aggregator ID: 2
+
+Slave Interface: eth2
+MII Status: up
+Aggregator ID: 2
 ```
 
-Маршрут:
+Оба линка в одном агрегаторе, Leaf1 и Leaf2 видны серверу как один LACP-партнёр. На Leaf `show port-channel` показывал активные Ethernet3 и Ethernet4 соответственно.
+
+### Маршрутизация
+
+```bash
+docker exec clab-fabric-server1 ip route get 20.20.20.12
+```
 
 ```text
 20.20.20.12 via 10.10.10.254 dev bond0 src 10.10.10.11
 ```
 
-### Проверка связности после повторного развёртывания
+Трафик в VLAN20 идёт через bond0, а не через сеть управления.
 
-Команды запускались из `server1` **через `bond0`**, чтобы исключить управляющую сеть Docker:
+### Проверка серверов
+
+Проверяю с server1 через bond0 после повторного deploy:
 
 ```bash
-ping -c 5 -I bond0 10.10.10.254
-ping -c 5 -I bond0 20.20.20.12
-ping -c 5 -I bond0 10.10.10.13
+docker exec clab-fabric-server1 ping -c 5 -I bond0 10.10.10.254
+docker exec clab-fabric-server1 ping -c 5 -I bond0 20.20.20.12
+docker exec clab-fabric-server1 ping -c 5 -I bond0 10.10.10.13
 ```
 
-| Проверка | Получено | Потери | RTT avg |
-|---|---:|---:|---:|
-| server1 → Anycast Gateway VLAN10 | 5/5 | 0% | 3.189 мс |
-| server1 → server2, VLAN20 | 5/5 | 0% | 3.647 мс |
-| server1 → server3, VLAN10 | 5/5 | 0% | 7.739 мс |
+Результаты:
+
+```text
+server1 -> 10.10.10.254 (Anycast GW): 5/5, loss 0%, avg 3.189 ms
+server1 -> 20.20.20.12 (VLAN20):   5/5, loss 0%, avg 3.647 ms
+server1 -> 10.10.10.13 (VLAN10):   5/5, loss 0%, avg 7.739 ms
+```
+
+L2-связность с server3 и маршрутизация к server2 работают.
 
 ### Проверка отказоустойчивости
 
-Два теста проводились на `server1` до финального повторного развёртывания:
-
-| Состояние | Ping до `10.10.10.254` | Ping до `20.20.20.12` |
-|---|---|---|
-| Только `eth1` → Leaf1 (`eth2 down`) | 5/5, 0% потерь | 5/5, 0% потерь |
-| Только `eth2` → Leaf2 (`eth1 down`) | 10/10, 0% потерь | 10/10, 0% потерь |
-
-После восстановления интерфейсов `bond0` снова показывал два активных порта.
-
-**Ограничение теста:** проверки подтверждают связность *после отключения* линка. Непрерывный ping непосредственно во время отключения не запускался; длительность сходимости и потери при переключении не измерялись.
-
-## Сложности и решение
-
-1. При запуске только через `docker start` контейнеры cEOS получили статус `running`, но не все veth-соединения были восстановлены; BGP EVPN на Leaf2 находился в `Connect`. Полное развёртывание через Containerlab восстановило соединения, OSPF и BGP.
-2. Образ Alpine использовал BusyBox `ip`. Команда настройки режима bonding не срабатывала, и `bond0` оставался в `balance-rr`; Leaf ожидали LACP. Установка `iproute2` и отдельная команда `ip link set bond0 type bond mode 802.3ad ...` устранили проблему. Исправление закреплено в YAML.
-3. На Leaf2 изначально не хватало VLAN10 → VNI10010, объявления VLAN10 в BGP EVPN и локального Anycast Gateway VLAN10. После добавления недостающих настроек связь через оба Leaf восстановилась.
-4. Изначально часть ping-тестов шла по маршруту по умолчанию через управляющий `eth0`. Для корректной проверки Data Plane был добавлен маршрут к `20.20.20.0/24` через `10.10.10.254 dev bond0`.
-
-## Сохранение и запуск
-
-Проект располагается в `~/labs/fabric`:
-
-- `fabric.clab.yml` — топология, сетевые подключения и `exec` для Linux.
-- `configs/*.cfg` — мастер-конфигурации cEOS для следующего развёртывания.
-- `save-fabric.sh` — сохранение текущих cEOS-конфигураций и копирование в `configs/`.
-- `start-fabric.sh` — удаление прежней инстанции и развёртывание лаборатории заново.
-- `backups/` — резервные копии конфигураций.
+По очереди отключал на server1 один из линков, оставляя второй активным.
 
 ```bash
-cd ~/labs/fabric
-./save-fabric.sh   # после изменений на Arista, до destroy
-./start-fabric.sh  # пересоздаёт фабрику, используя configs/*.cfg
+ip link set eth2 down
+ping -c 5 -I bond0 10.10.10.254
+ping -c 5 -I bond0 20.20.20.12
+ip link set eth2 up
+
+ip link set eth1 down
+ping -c 10 -I bond0 10.10.10.254
+ping -c 10 -I bond0 20.20.20.12
+ip link set eth1 up
 ```
 
-**Внимание:** `start-fabric.sh` содержит `containerlab destroy --cleanup`. Перед запуском нужно сохранить актуальные конфигурации. После изменения Linux-узлов обновления необходимо фиксировать в `fabric.clab.yml`, так как настройки внутри Alpine-контейнера непостоянны.
+При отключённом eth2 (через Leaf1) оба ping — 0% потерь, 5/5. При отключённом eth1 (через Leaf2) — также 0%, 10/10. Bond остаётся UP с одним портом. После восстановления обоих линков снова 2 порта в активном агрегаторе.
 
-## Вывод
+Это проверка связности после отказа. Потери непосредственно в момент переключения не измерял.
 
-Реализован Ethernet Segment с одинаковым ESI на двух Arista Leaf, настроен единый LACP System ID и Linux bonding IEEE 802.3ad. После штатного развёртывания сервер автоматически подключается к двум Leaf, а передача трафика в пределах VLAN10 и между VLAN10/VLAN20 проходит через EVPN Fabric. Отказ каждого клиентского подключения по отдельности не нарушил связность в последующих ping-тестах. Следующий возможный этап — измерить потери и время восстановления **непосредственно в момент отказа**.
+## Проблемы при настройке
+
+1. После запуска cEOS через `docker start` контейнеры были running, но veth-линки не все восстановились. OSPF/BGP не работали. Перешёл на штатный запуск через Containerlab.
+2. В Alpine команда `ip` была из BusyBox. Bond создавался в `balance-rr`, на обоих Leaf было `waiting for LACP response`. После установки `iproute2` и отдельной настройки режима `802.3ad` LACP поднялся.
+3. На Leaf2 сначала не было VNI10010 и шлюза VLAN10. После добавления соответствующего L2VNI, BGP EVPN VLAN10 и Anycast Gateway трафик через оба линка заработал.
+4. Изначально ping до VLAN20 уходил через management `eth0`, поскольку не было маршрута через bond0. Добавил маршрут в секцию `exec`.
+
+## Выводы:
+
+Настроил ESI-LAG в режиме all-active между Leaf1 и Leaf2, клиентский bond0 работает по LACP 802.3ad. Проверил EVPN маршруты, L2-связность в VLAN10 и маршрутизацию в VLAN20. При отключении любого из двух клиентских линков связность через оставшийся сохраняется. После исправления `fabric.clab.yml` лаборатория поднимается через `./start-fabric.sh` без ручной перенастройки server1.
