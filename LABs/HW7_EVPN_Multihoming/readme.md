@@ -98,13 +98,12 @@ router bgp 65100
       redistribute learned
 ```
 
-По `show running-config all interfaces Port-Channel10` вижу `redundancy all-active`; в обычном running-config команда не выводится, т.к. используется значение по умолчанию.
-
+По `show run all interfaces Port-Channel10` вижу `redundancy all-active`.
 На Spine ничего не менял.
 
 ### Server1
 
-В Alpine изначально использовался BusyBox `ip`. После deploy bond0 создавался в `balance-rr`, Leaf ожидали LACP. Установил `iproute2` и вынес установку режима 802.3ad в отдельную команду. Текущая секция `exec` в `fabric.clab.yml`:
+В образе Alpine (для серверов) была проблема с бондингом. Изначально использовался BusyBox `ip`. После deploy bond0 создавался в `balance-rr`, Leaf ожидали LACP, агрегирование не происходило. Установил `iproute2`, все заработало. Секция `exec` в `fabric.clab.yml`:
 
 ```yaml
     server1:
@@ -126,13 +125,13 @@ router bgp 65100
         - ip route replace 20.20.20.0/24 via 10.10.10.254 dev bond0
 ```
 
-Маршрут в VLAN20 добавил явно, чтобы тесты не уходили через management `eth0` и Docker default gateway.
+Маршрут с сервера в VLAN20 добавил явно через bond0, тк без этого он уходил в management-сеть через `eth0`.
 
 ## Проверка
 
 ### Underlay/Overlay
 
-После штатного `./start-fabric.sh` на Leaf1 два OSPF-соседа в FULL, BGP EVPN до Spine1 и Spine2 в Established.
+После деплоя лабы на Leaf1 два OSPF-соседа в FULL, BGP EVPN до Spine1 и Spine2 в Established.
 
 ```text
 leaf1#show ip ospf neighbor
@@ -148,7 +147,7 @@ SPINE2  10.0.2.0  Estab
 
 ### LACP
 
-Проверяю агрегатор после полного пересоздания фабрики, без ручной настройки server1:
+Проверяю агрегатор на server1 после полного деплоя фабрики:
 
 ```bash
 docker exec clab-fabric-server1 cat /proc/net/bonding/bond0
@@ -175,7 +174,7 @@ MII Status: up
 Aggregator ID: 2
 ```
 
-Оба линка в одном агрегаторе, Leaf1 и Leaf2 видны серверу как один LACP-партнёр. На Leaf `show port-channel` показывал активные Ethernet3 и Ethernet4 соответственно.
+Оба линка в одном агрегаторе (Number of ports: 2), Leaf1 и Leaf2 видны серверу как один LACP-партнёр. На Leaf `show port-channel` показывал активные Ethernet3 и Ethernet4 соответственно.
 
 ### Маршрутизация
 
@@ -187,7 +186,7 @@ docker exec clab-fabric-server1 ip route get 20.20.20.12
 20.20.20.12 via 10.10.10.254 dev bond0 src 10.10.10.11
 ```
 
-Трафик в VLAN20 идёт через bond0, а не через сеть управления.
+Трафик в VLAN20 идёт через bond0.
 
 ### Проверка серверов
 
@@ -225,16 +224,15 @@ ping -c 10 -I bond0 20.20.20.12
 ip link set eth1 up
 ```
 
-При отключённом eth2 (через Leaf1) оба ping — 0% потерь, 5/5. При отключённом eth1 (через Leaf2) — также 0%, 10/10. Bond остаётся UP с одним портом. После восстановления обоих линков снова 2 порта в активном агрегаторе.
+При отключённом eth2 (через Leaf1) оба пинга - 0% потерь, 5/5. При отключённом eth1 (через Leaf2) - 0%, 10/10. Bond остаётся UP с одним портом. После восстановления обоих линков снова 2 порта в активном агрегаторе.
 
 Это проверка связности после отказа. Потери непосредственно в момент переключения не измерял.
 
 ## Проблемы при настройке
 
-1. После запуска cEOS через `docker start` контейнеры были running, но veth-линки не все восстановились. OSPF/BGP не работали. Перешёл на штатный запуск через Containerlab.
-2. В Alpine команда `ip` была из BusyBox. Bond создавался в `balance-rr`, на обоих Leaf было `waiting for LACP response`. После установки `iproute2` и отдельной настройки режима `802.3ad` LACP поднялся.
-3. На Leaf2 сначала не было VNI10010 и шлюза VLAN10. После добавления соответствующего L2VNI, BGP EVPN VLAN10 и Anycast Gateway трафик через оба линка заработал.
-4. Изначально ping до VLAN20 уходил через management `eth0`, поскольку не было маршрута через bond0. Добавил маршрут в секцию `exec`.
+1. В образе Alpine команда `ip` была из BusyBox. Bond создавался в `balance-rr`, на обоих Leaf было `waiting for LACP response`. После установки `iproute2` и отдельной настройки режима `802.3ad` LACP поднялся.
+2. На Leaf2 сначала не было VNI10010 и шлюза VLAN10. После добавления соответствующего L2VNI, BGP EVPN VLAN10 и Anycast Gateway трафик через оба линка заработал.
+3. Изначально ping до VLAN20 уходил через служебный интерфейс management `eth0`, поскольку не было маршрута через bond0. Добавил маршрут в секцию `exec`.
 
 ## Выводы:
 
