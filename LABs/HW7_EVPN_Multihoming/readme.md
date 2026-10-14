@@ -2,31 +2,14 @@
 
 ## Топология сети
 
-Существующая фабрика: 2 Spine, 3 Leaf, 4 Linux-сервера. Arista cEOS 4.33.2F, Containerlab в Ubuntu/WSL2.
-
 Для этой работы server1 подключён двумя линками к Leaf1 и Leaf2. Остальные подключения оставлены без изменений.
 
-```mermaid
-flowchart TB
-    spine1 --- leaf1
-    spine1 --- leaf2
-    spine1 --- leaf3
-    spine2 --- leaf1
-    spine2 --- leaf2
-    spine2 --- leaf3
-    leaf1 -- "Et3 — eth1" --- server1
-    leaf2 -- "Et4 — eth2" --- server1
-    leaf2 --- server2
-    leaf3 --- server3
-    leaf3 --- server4
-```
+## Задания:
 
-## Задание:
-
-1. Подключить клиента двумя линками к разным Leaf.
-2. Настроить агрегированный канал на клиенте.
-3. Настроить ESI-LAG для VXLAN EVPN.
-4. Проверить связность, в том числе при отключении одного линка.
+1. Подключить клиента двумя линками к разным Leaf;
+2. Настроить агрегированный канал на клиенте;
+3. Настроить ESI-LAG для VXLAN EVPN;
+4. Проверить связность, в том числе при отключении одного линка;
 5. Зафиксировать адресацию и конфигурации.
 
 ## IP-адресация:
@@ -38,13 +21,13 @@ flowchart TB
 | server3 | Leaf3 Et3 | 10 | 10.10.10.13/24 | 10.10.10.254 |
 | server4 | Leaf3 Et4 | 20 | 20.20.20.14/24 | 20.20.20.254 |
 
-VLAN10 — VNI10010; VLAN20 — VNI10020; VRF TENANT_A — L3VNI50001. Anycast MAC — 0000.0000.9999.
+VLAN10 - VNI10010; VLAN20 - VNI10020; VRF TENANT_A - L3VNI50001. Anycast MAC - 0000.0000.9999.
 
 ## Конфигурация Underlay/Overlay
 
-1. Существующую фабрику не перестраивал. Underlay — OSPF, Overlay — iBGP EVPN, оба Spine — RR, AS 65100.
+1. Существующую фабрику не перестраивал. Underlay - OSPF, Overlay - iBGP EVPN, оба Spine - RR, AS 65100.
 2. В Containerlab добавил второй линк server1 к Leaf2. На сервере eth1 и eth2 объединяются в bond0 по LACP 802.3ad.
-3. На Leaf1 и Leaf2 настроил Port-Channel10, одинаковый ESI и LACP System ID. Режим Multihoming — all-active.
+3. На Leaf1 и Leaf2 настроил Port-Channel10, одинаковый ESI и LACP System ID. Режим Multihoming - all-active.
 4. На Leaf2 добавил VLAN10/VNI10010, BGP EVPN для VLAN10 и Anycast Gateway 10.10.10.254. Ранее Leaf2 обслуживал только VLAN20.
 
 ### Подключение server1
