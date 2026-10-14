@@ -25,14 +25,14 @@ VLAN10 - VNI10010; VLAN20 - VNI10020; VRF TENANT_A - L3VNI50001. Anycast MAC - 0
 
 ## Конфигурация Underlay/Overlay
 
-1. Существующую фабрику не перестраивал. Underlay - OSPF, Overlay - iBGP EVPN, оба Spine - RR, AS 65100.
-2. В Containerlab добавил второй линк server1 к Leaf2. На сервере eth1 и eth2 объединяются в bond0 по LACP 802.3ad.
-3. На Leaf1 и Leaf2 настроил Port-Channel10, одинаковый ESI и LACP System ID. Режим Multihoming - all-active.
+1. Существующую фабрику не перестраивал. Underlay - OSPF, Overlay - iBGP EVPN, оба Spine - RR, AS 65100;
+2. В Containerlab добавил второй линк server1 к Leaf2. На сервере eth1 и eth2 объединяются в bond0 по LACP;
+3. На Leaf1 и Leaf2 настроил Port-Channel10, одинаковый ESI и LACP System ID. Режим Multihoming - all-active;
 4. На Leaf2 добавил VLAN10/VNI10010, BGP EVPN для VLAN10 и Anycast Gateway 10.10.10.254. Ранее Leaf2 обслуживал только VLAN20.
 
 ### Подключение server1
 
-Фрагмент `fabric.clab.yml`:
+Фрагмент изменений в `fabric.clab.yml`:
 
 ```yaml
     - endpoints: ["leaf1:eth3", "server1:eth1"]
