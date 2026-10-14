@@ -4,6 +4,8 @@
 
 Для этой работы server1 подключён двумя линками к Leaf1 и Leaf2. Остальные подключения оставлены без изменений.
 
+<img width="792" height="957" alt="MHome" src="https://github.com/user-attachments/assets/edfcb817-125a-4fe4-ad12-9688418d6803" />
+
 ## Задания:
 
 1. Подключить клиента двумя линками к разным Leaf;
