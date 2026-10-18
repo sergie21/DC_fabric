@@ -38,11 +38,11 @@ FRR работает с одной глобальной таблицей мар�
 ## Конфигурация Underlay/Overlay
 
 1. Существующую фабрику сохранил: OSPF area 0 для Underlay, iBGP EVPN для Overlay, Spine - RR, AS 65100;
-2. На Leaf1 и Leaf2 сохранил `TENANT_A` и ESI-LAG для server1 из ДЗ №7;
-3. На Leaf3 создал `TENANT_B`, VLAN30/40, L2VNI 10030/10040, L3VNI 50002 и Anycast Gateway для обеих подсетей;
+2. На Leaf1 и Leaf2 сохранил TENANT_A и ESI-LAG для server1 из ДЗ №7;
+3. На Leaf3 создал TENANT_B, VLAN30/40, L2VNI 10030/10040, L3VNI 50002 и Anycast Gateway для обеих подсетей;
 4. Подключил FRR к Leaf3 двумя "физическими" L3-линками и сделал eBGP для каждой VRF;
-5. FRR передаёт default route `0.0.0.0/0` в обе VRF. Leaf3 распространяет его по EVPN как Route-Type 5;
-6. На Leaf3 в `TENANT_B` настроил агрегацию двух `/24` с VLANs в `30.30.30.0/23` с `summary-only`.
+5. FRR передаёт default route 0.0.0.0/0 в обе VRF. Leaf3 распространяет его по EVPN как Route-Type 5;
+6. На Leaf3 в TENANT_B настроил агрегацию двух /24 с VLANs в 30.30.30.0/23 с summary-only.
 
 ### Leaf3 - VRF, VLAN, VXLAN
 
@@ -83,7 +83,7 @@ interface Vxlan1
    vxlan vrf TENANT_B vni 50002
 ```
 
-VLAN10/20 и L3VNI50001 для `TENANT_A` на Leaf3 оставил. Клиентов VLAN10/20 на Leaf3 теперь нет - server3/server4 переведены в VLAN 30/40 `TENANT_B`.
+VLAN10/20 и L3VNI50001 для TENANT_A на Leaf3 оставил. Клиентов VLAN10/20 на Leaf3 теперь нет - server3/server4 переведены в VLAN 30/40 TENANT_B.
 
 ### Leaf3 - подключение FRR и BGP
 
@@ -133,7 +133,7 @@ router bgp 65100
          neighbor 172.16.20.2 activate
 ```
 
-Для `TENANT_A` и `TENANT_B` используются разные RT. Поэтому Leaf1 видит маршруты обеих VRF в общей EVPN BGP-таблице, но импортирует в `TENANT_A` только маршруты с соответствующим RT.
+Для TENANT_A и TENANT_B используются разные RT. Поэтому Leaf1 видит маршруты обеих VRF в общей EVPN BGP-таблице, но импортирует в TENANT_A только маршруты с соответствующим RT.
 
 ### Border-FW - FRR, AS 65000
 
@@ -177,16 +177,16 @@ router bgp 65000
   neighbor 172.16.20.1 route-map EXPORT_DEFAULT out
 ```
 
-`IMPORT_FROM_LEAF` - разрешает приём маршрутов от Leaf3, без фильтрации конкретных префиксов.
-`DEFAULT_ONLY` - prefix-list, совпадающий только с дефлотом `0.0.0.0/0`.
-`EXPORT_DEFAULT` - разрешает анонс FRR в сторону Leaf3 только дефолта.
-`ip route 0.0.0.0/0 Null0`- создаёт маршрут для BGP `network 0.0.0.0/0`. Это лабораторная "заглушка", а не реальный выход в интернет.
+IMPORT_FROM_LEAF - разрешает приём маршрутов от Leaf3, без фильтрации конкретных префиксов.
+DEFAULT_ONLY - prefix-list, совпадающий только с дефлотом 0.0.0.0/0.
+EXPORT_DEFAULT - разрешает анонс FRR в сторону Leaf3 только дефолта.
+ip route 0.0.0.0/0 Null0- создаёт маршрут для BGP "network 0.0.0.0/0". Это лабораторная "заглушка", а не реальный выход в интернет.
 
-FRR получает от Leaf3 четыре пользовательские подсети `/24`. Агрегация `/23` настроена отдельно в BGP VRF `TENANT_B` на Leaf3 для EVPN RT-5, а не как замена всех маршрутов на FRR.
+FRR получает от Leaf3 четыре пользовательские подсети /24. Агрегация /23 настроена отдельно в BGP VRF TENANT_B на Leaf3 для EVPN RT-5, а не как замена всех маршрутов на FRR.
 
 ### Server3 и Server4
 
-Перевёл оба сервера из `TENANT_A` в `TENANT_B`. Адреса и default route:
+Перевёл оба сервера из TENANT_A в TENANT_B. Адреса и default route:
 
 ```yaml
     server3:
@@ -208,7 +208,7 @@ FRR получает от Leaf3 четыре пользовательские п
         - ip route replace default via 30.30.31.254 dev eth1
 ```
 
-Для server1 сохранил `bond0` (LACP 802.3ad) и установил дефолтныый маршрут через `10.10.10.254`, чтобы меж-VRF-ный трафик не уходил через паразитный management `eth0`. Для server2 — default route через `20.20.20.254`.
+Для server1 сохранил bond0 (LACP 802.3ad) и установил дефолтныый маршрут через 10.10.10.254, чтобы меж-VRF-ный трафик не уходил через паразитный management eth0. Для server2 - default route через 20.20.20.254.
 
 ## Проверка
 
@@ -254,7 +254,7 @@ Gateway of last resort:
 
 ### EVPN Route-Type 5 и суммаризация
 
-Для `TENANT_B` использовал две смежные подсети:
+Для TENANT_B использовал две смежные подсети:
 
 ```text
 30.30.30.0/24  (VLAN30) и 
@@ -283,11 +283,11 @@ leaf1#show bgp evpn route-type ip-prefix ipv4
       Next Hop 10.1.103.0
 ```
 
-В выводе на Leaf1 суммарный `30.30.30.0/23` получен через Spine1 и Spine2 (RR). Отдельных RT-5 для `30.30.30.0/24` и `30.30.31.0/24` больше нет (тк `summary-only`). Default route для обеих VRF продолжает распространяться как RT-5.
+В выводе на Leaf1 суммарный 30.30.30.0/23 получен через Spine1 и Spine2 (RR). Отдельных RT-5 для 30.30.30.0/24 и 30.30.31.0/24 больше нет (тк summary-only). Default route для обеих VRF продолжает распространяться как RT-5.
 
 ### Проверка меж-VRF-ной маршрутизации
 
-Проверяю с server1 (`TENANT_A`) доступность обоих серверов `TENANT_B`:
+Проверяю с server1 (TENANT_A) доступность обоих серверов TENANT_B:
 
 ```bash
 ping -c 4 30.30.30.13
@@ -318,4 +318,4 @@ server1 (TENANT_A)
 
 ## Выводы
 
-Настроил 2 изолированных VRF - `TENANT_A` и `TENANT_B`. Между ними организовал маршрутизацию через внешний FRR по двум eBGP-сессиям. FRR анонсирует дефолт в обе VRF, Leaf3 распространяет его через EVPN RT-5. Для `TENANT_B` настроил суммаризацию двух `/24` в `30.30.30.0/23` с `summary-only`. На Leaf1 полцчил только агрегированный саммари-префикс. Проверил связность server1 с server3 и server4 после суммаризации.
+Настроил 2 изолированных VRF - TENANT_A и TENANT_B. Между ними организовал маршрутизацию через внешний FRR по двум eBGP-сессиям. FRR анонсирует дефолт в обе VRF, Leaf3 распространяет его через EVPN RT-5. Для TENANT_B настроил суммаризацию двух /24 в 30.30.30.0/23 с summary-only. На Leaf1 полцчил только агрегированный саммари-префикс. Проверил связность server1 с server3 и server4 после суммаризации.
