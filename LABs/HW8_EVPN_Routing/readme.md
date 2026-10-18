@@ -4,7 +4,7 @@
 
 За основу взял свою фабрику: 2 Spine, 3 Leaf, 4 сервера, ESI-LAG к лифам от server1. Добавил внешний файервол на FRR border-fw.
 
-<img width="888" height="796" alt="VXLAN Routing1" src="https://github.com/user-attachments/assets/9269603d-9d32-4598-b559-f248b6ca220b" />
+<img width="944" height="859" alt="VXLAN Routing1" src="https://github.com/user-attachments/assets/25d1da6d-4226-4205-860c-e44e1481f177" />
 
 ## Задание
 
