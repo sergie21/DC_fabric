@@ -3,6 +3,7 @@
 ## Топология сети
 
 За основу взял свою фабрику: 2 Spine, 3 Leaf, 4 сервера, ESI-LAG к Leaf1/Leaf2 для server1. Добавил внешний маршрутизатор border-fw на FRR.
+
 <img width="888" height="796" alt="VXLAN Routing1" src="https://github.com/user-attachments/assets/ab6859fb-565a-46c6-94d6-25deaa142f45" />
 
 ## Задание
