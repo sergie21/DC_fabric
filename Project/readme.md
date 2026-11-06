@@ -80,11 +80,6 @@
 
 Временный trunk использовался как миграционный L2-стык; после переноса серверов Legacy не участвует в обслуживании мигрированных сервисов. Физическое соединение по-прежнему описано в YAML: отключение Legacy от сервисной передачи не тождественно удалению контейнеров и линка из стенда.
 
-- [`configs/legacy-sw1.cfg`](configs/legacy-sw1.cfg)
-- [`configs/leaf3.cfg`](configs/leaf3.cfg)
-- [`configs/legacy-r1.cfg`](configs/legacy-r1.cfg)
-- [`fabric.clab.yml`](fabric.clab.yml)
-
 ### Перенос VLAN 10–40
 
 | Шаг | Что переносилось | Целевое подключение |
@@ -95,11 +90,6 @@
 | VLAN40 | `legacy-s4` → `server4`, сохранён `30.30.31.14` | leaf3 eth4 |
 
 VLAN10 — подтверждённый пример переключения: исходный `legacy-s1` изолирован; отключены `legacy-sw1 Ethernet3` и шлюз на `legacy-r1 Ethernet1.10`. `server1` подключён к Fabric с прежним IP; используется Anycast Gateway `10.10.10.254`. Проверялись EVPN Type-2 маршруты. Остальные сегменты перенесены в целевую фабрику.
-
-- [`configs/server1-init.sh`](configs/server1-init.sh) — создание bond0 на Server1.
-- [`fabric.clab.yml`](fabric.clab.yml) — физические подключения и инициализация Server2–Server4.
-- [`configs/legacy-r1.cfg`](configs/legacy-r1.cfg) — исходные шлюзы Legacy.
-- [`configs/legacy-sw1.cfg`](configs/legacy-sw1.cfg) — миграционный коммутатор.
 
 ## 4. EVPN Multihoming (ESI-LAG)
 
