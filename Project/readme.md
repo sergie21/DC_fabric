@@ -70,6 +70,47 @@
 
 Подробная настройка Underlay, EVPN, VLAN/VNI и VRF выполнена ранее на курсе.
 
+<details>
+<summary>Leaf3: TENANT_B, L2VNI/L3VNI и Anycast Gateway (фрагмент)</summary>
+
+```eos
+vlan 30
+   name TENANT_B_VLAN30
+vlan 40
+   name TENANT_B_VLAN40
+vrf instance TENANT_B
+ip routing vrf TENANT_B
+!
+interface Vlan30
+   vrf TENANT_B
+   ip address virtual 30.30.30.254/24
+interface Vlan40
+   vrf TENANT_B
+   ip address virtual 30.30.31.254/24
+interface Vxlan1
+   vxlan vlan 30 vni 10030
+   vxlan vlan 40 vni 10040
+   vxlan vrf TENANT_B vni 50002
+!
+router bgp 65100
+   vlan 30
+      rd auto
+      route-target both 10030:10030
+      redistribute learned
+   vlan 40
+      rd auto
+      route-target both 10040:10040
+      redistribute learned
+   vrf TENANT_B
+      rd 10.0.103.0:50002
+      route-target import evpn 50002:50002
+      route-target export evpn 50002:50002
+      redistribute connected
+      aggregate-address 30.30.30.0/23 summary-only
+```
+
+</details>
+
 ## 3. Подготовка и выполнение миграции
 
 ### Временный L2-стык
@@ -79,6 +120,27 @@
 `legacy-sw1 eth5 ↔ leaf3 eth7`.
 
 Временный trunk использовался как миграционный L2-стык; после переноса серверов Legacy не участвует в обслуживании мигрированных сервисов. Физическое соединение по-прежнему описано в YAML: отключение Legacy от сервисной передачи не тождественно удалению контейнеров и линка из стенда.
+
+<details>
+<summary>Legacy-SW1 и Leaf3: миграционный trunk в итоговом состоянии</summary>
+
+```eos
+! legacy-sw1
+interface Ethernet5
+   description MIGRATION_TO_LEAF3
+   shutdown
+   switchport trunk allowed vlan none
+   switchport mode trunk
+!
+! leaf3
+interface Ethernet7
+   description MIGRATION_TO_LEGACY_SW1
+   shutdown
+   switchport trunk allowed vlan none
+   switchport mode trunk
+```
+
+</details>
 
 ### Перенос VLAN 10–40
 
@@ -91,11 +153,80 @@
 
 VLAN10 — подтверждённый пример переключения: исходный `legacy-s1` изолирован; отключены `legacy-sw1 Ethernet3` и шлюз на `legacy-r1 Ethernet1.10`. `server1` подключён к Fabric с прежним IP; используется Anycast Gateway `10.10.10.254`. Проверялись EVPN Type-2 маршруты. Остальные сегменты перенесены в целевую фабрику.
 
+<details>
+<summary>Legacy-R1, Legacy-SW1/2: отключённые интерфейсы после миграции (фрагмент)</summary>
+
+```eos
+! legacy-r1: старые шлюзы
+interface Ethernet1.10
+   shutdown
+interface Ethernet1.20
+   shutdown
+interface Ethernet1.30
+   shutdown
+interface Ethernet1.40
+   shutdown
+!
+! legacy-sw1: старые серверы VLAN10/20
+interface Ethernet3
+   shutdown
+interface Ethernet4
+   shutdown
+!
+! legacy-sw2: старые серверы VLAN30/40
+interface Ethernet3
+   shutdown
+interface Ethernet4
+   shutdown
+```
+
+</details>
+
 ## 4. EVPN Multihoming (ESI-LAG)
 
 `server1` объединяет `eth1` (leaf1) и `eth2` (leaf2) в `bond0` по IEEE 802.3ad. На Leaf используется `Port-Channel10`, VLAN10, ESI `0000:0000:0000:0000:0010`, LACP System ID `1111.2222.0010`, режим all-active.
 
+<details>
+<summary>Leaf1 и Leaf2: Port-Channel10 / EVPN Ethernet Segment (фрагмент)</summary>
+
+```eos
+! leaf1
+interface Ethernet3
+   channel-group 10 mode active
+interface Port-Channel10
+   switchport access vlan 10
+   evpn ethernet-segment
+      identifier 0000:0000:0000:0000:0010
+   lacp system-id 1111.2222.0010
+!
+! leaf2
+interface Ethernet4
+   channel-group 10 mode active
+interface Port-Channel10
+   switchport access vlan 10
+   evpn ethernet-segment
+      identifier 0000:0000:0000:0000:0010
+   lacp system-id 1111.2222.0010
+```
+
+</details>
+
 Результат: оба физических подключения входят в один LACP-агрегатор. В предыдущей лабораторной работе проверена связность через каждый Leaf при отказе другого подключения.
+
+<details>
+<summary>Server1: настройка bond0 и результат проверки</summary>
+
+Ключевые строки `configs/server1-init.sh` (не полный скрипт):
+
+```sh
+ip link add bond0 type bond
+echo 802.3ad > /sys/class/net/bond0/bonding/mode
+echo fast > /sys/class/net/bond0/bonding/lacp_rate
+ip link set eth1 master bond0
+ip link set eth2 master bond0
+ip addr replace 10.10.10.11/24 dev bond0
+ip route replace default via 10.10.10.254 dev bond0
+```
 
 Подтверждённый результат после восстановления Leaf1:
 
@@ -115,6 +246,8 @@ MII Status: up
 Aggregator ID: 2
 ```
 
+</details>
+
 ## 5. Внешняя маршрутизация между TENANT_A и TENANT_B
 
 `leaf3` подключён к `border-fw` (FRRouting, AS 65000) двумя физическими L3-соединениями:
@@ -127,6 +260,35 @@ Aggregator ID: 2
 Соседства eBGP между Fabric (AS 65100) и Border-FW (AS 65000) установлены. Border-FW получает tenant-префиксы и распространяет маршрут по умолчанию. МежVRF-связность через внешний узел проверялась ранее.
 
 Ограничение: оба tenant-направления сходятся в общей таблице маршрутизации `default` на Border-FW; полноценная фильтрация доступа тенантов не реализована.
+
+<details>
+<summary>Leaf3: eBGP в двух VRF (фрагмент)</summary>
+
+```eos
+interface Ethernet5
+   no switchport
+   vrf TENANT_A
+   ip address 172.16.10.1/30
+interface Ethernet6
+   no switchport
+   vrf TENANT_B
+   ip address 172.16.20.1/30
+!
+router bgp 65100
+   vrf TENANT_A
+      neighbor 172.16.10.2 remote-as 65000
+      address-family ipv4
+         neighbor 172.16.10.2 activate
+   vrf TENANT_B
+      neighbor 172.16.20.2 remote-as 65000
+      address-family ipv4
+         neighbor 172.16.20.2 activate
+```
+
+</details>
+
+<details>
+<summary>Border-FW: eBGP и маршрут по умолчанию (фрагмент до Cloud-GW)</summary>
 
 ```frr
 ip prefix-list DEFAULT_ONLY seq 10 permit 0.0.0.0/0
@@ -145,6 +307,8 @@ router bgp 65000
  exit-address-family
 ```
 
+</details>
+
 ## 6. Испытания отказоустойчивости
 
 | Сценарий | Зафиксированный результат |
@@ -156,6 +320,9 @@ router bgp 65000
 | Восстановление ESI-LAG | `bond0`: оба участника UP, Aggregator ID 2 |
 
 При изоляции Leaf1 Server1 сохранил рабочее подключение через Leaf2. Максимальный RTT во время испытания **не равен измеренному времени сходимости**. Для теста со Spine1 используется результат сохранения связности при отказе узла; факт переключения конкретного потока с ранее активного пути отдельно не измерялся.
+
+<details>
+<summary>Команды испытания отказа Leaf1</summary>
 
 ```text
 # Постоянная проверка со стороны server1:
@@ -179,6 +346,8 @@ show bgp evpn summary
 cat /proc/net/bonding/bond0
 ```
 
+</details>
+
 ## 7. Готовность к подключению облачной инфраструктуры
 
 Для моделирования внешней сети добавлен `cloud-gw` (FRRouting, AS 65200), подключённый к Border-FW (AS 65000) через выделенный data-plane линк:
@@ -199,6 +368,9 @@ B E 10.200.0.0/24 [200/0]
 |---|---|---|
 | Server1 → Cloud-GW | `ping -c 10 10.200.0.1` | **10/10, 0% потерь**, средний RTT 9,724 мс |
 | Cloud-GW → Server1 | `ping -I 10.200.0.1 -c 10 10.10.10.11` | **10/10, 0% потерь**, средний RTT 7,387 мс |
+
+<details>
+<summary>Cloud-GW: BGP и маршрутные политики</summary>
 
 ```frr
 frr version 10.4.1_git
@@ -228,6 +400,12 @@ router bgp 65200
 exit
 
 ```
+
+</details>
+
+<details>
+<summary>Border-FW: дополнения для подключения Cloud-GW</summary>
+
 В дополнение к исходным BGP-соседствам:
 
 ```frr
@@ -256,6 +434,8 @@ router bgp 65000
   neighbor 172.16.30.2 route-map EXPORT_TO_CLOUD out
  exit-address-family
 ```
+
+</details>
 
 Ограничение: маршрутные фильтры BGP сами по себе не обеспечивают полноценную политику безопасности между TENANT_A, TENANT_B и облаком, поскольку Border-FW работает с одной глобальной таблицей маршрутизации. Для реального внедрения потребуется отдельная проработка изоляции и фильтрации.
 
